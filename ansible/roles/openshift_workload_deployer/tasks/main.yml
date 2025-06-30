@@ -7,7 +7,7 @@
 
 - name: Build cluster lookup dictionary
   ansible.builtin.set_fact:
-    _openshift_cluster_lookup: "{{ _openshift_cluster_lookup | default({}) | combine(item) }}"
+    _openshift_workload_deployer_clusters: "{{ _openshift_workload_deployer_clusters | combine(item) }}"
   loop: "{{ openshift_workload_deployer_clusters }}"
 
 - name: Deploy workloads to clusters
@@ -15,8 +15,8 @@
     name: "{{ workload_item.0.name }}"
     apply:
       environment:
-        K8S_AUTH_HOST: "https://{{ _openshift_cluster_lookup[workload_item.1].api_url }}:6443"
-        K8S_AUTH_API_KEY: "{{ _openshift_cluster_lookup[workload_item.1].api_token }}"
+        K8S_AUTH_HOST: "https://{{ _openshift_workload_deployer_clusters[workload_item.1].api_url }}:6443"
+        K8S_AUTH_API_KEY: "{{ _openshift_workload_deployer_clusters[workload_item.1].api_token }}"
         K8S_AUTH_VERIFY_SSL: false
   loop: "{{ openshift_workload_deployer_workloads | subelements('clusters') }}"
   loop_control:

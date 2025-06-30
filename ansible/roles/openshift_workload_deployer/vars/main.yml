@@ -1,2 +1,2 @@
 ---
-_openshift_cluster_lookup: ""
+_openshift_workload_deployer_clusters: {}

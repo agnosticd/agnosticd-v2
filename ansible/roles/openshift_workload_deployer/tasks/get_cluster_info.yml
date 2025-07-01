@@ -1,0 +1,88 @@
+---
+# This file gets cluster information for a single cluster
+# The calling task should set environment variables K8S_AUTH_HOST and K8S_AUTH_API_KEY
+# The calling task should set current_cluster_name variable
+
+# Module Defaults
+- name: Get Cluster Information
+  module_defaults:
+    group/k8s:
+      host: "{{ current_cluster_k8s_auth_host }}"
+      api_key: "{{ current_cluster_k8s_auth_api_key }}"
+      validate_certs: "{{ current_cluster_k8s_auth_verify_ssl | bool }}"
+  block:
+  - name: "Determine web console URL ({{ current_cluster_name }})"
+    kubernetes.core.k8s_info:
+      api_version: config.openshift.io/v1
+      kind: Console
+      name: cluster
+    register: r_console
+    retries: 30
+
+  - name: "Determine web console URL ({{ current_cluster_name }})"
+    kubernetes.core.k8s_info:
+      api_version: config.openshift.io/v1
+      kind: Console
+      name: cluster
+    register: r_console
+    retries: 30
+    delay: 5
+    until:
+    - r_console.resources | length > 0
+    - r_console.resources[0].status is defined
+    - r_console.resources[0].status.consoleURL is defined
+    - r_console.resources[0].status.consoleURL | length > 0
+
+  - name: "Determine API server URL ({{ current_cluster_name }})"
+    kubernetes.core.k8s_info:
+      api_version: config.openshift.io/v1
+      kind: Infrastructure
+      name: cluster
+    register: r_api
+    retries: 30
+    delay: 5
+    until:
+    - r_api.resources | length > 0
+    - r_api.resources[0].status is defined
+    - r_api.resources[0].status.apiServerURL is defined
+    - r_api.resources[0].status.apiServerURL | length > 0
+
+  - name: "Determine OpenShift Ingress Domain ({{ current_cluster_name }})"
+    kubernetes.core.k8s_info:
+      api_version: config.openshift.io/v1
+      kind: Ingress
+      name: cluster
+    register: r_ingress
+    retries: 30
+    delay: 5
+    until:
+    - r_ingress.resources | length > 0
+    - r_ingress.resources[0].spec.domain is defined
+    - r_ingress.resources[0].spec.domain | length > 0
+
+- name: "Set facts for OpenShift access ({{ current_cluster_name }})"
+  ansible.builtin.set_fact:
+    openshift_api_url: "{{ r_api.resources[0].status.apiServerURL | urlsplit('hostname') }}"
+    openshift_console_url: "{{ r_console.resources[0].status.consoleURL }}"
+    openshift_cluster_ingress_domain: "{{ r_ingress.resources[0].spec.domain }}"
+
+- name: "Update cluster info dictionary ({{ current_cluster_name }})"
+  ansible.builtin.set_fact:
+    _openshift_workload_deployer_cluster_info: >-
+      {{
+        _openshift_workload_deployer_cluster_info | combine({
+          current_cluster_name: {
+            'api_url': openshift_api_url,
+            'console_url': openshift_console_url,
+            'ingress_domain': openshift_cluster_ingress_domain
+          }
+        })
+      }}
+
+- name: "Debug cluster info for {{ current_cluster_name }}"
+  ansible.builtin.debug:
+    msg:
+      - "Cluster: {{ current_cluster_name }}"
+      - "API URL: {{ openshift_api_url }}"
+      - "Console URL: {{ openshift_console_url }}"
+      - "Ingress Domain: {{ openshift_cluster_ingress_domain }}"

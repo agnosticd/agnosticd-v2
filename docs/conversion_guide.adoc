@@ -45,10 +45,10 @@ Collections and roles are now installed *before* the `ansible/main.yml` playbook
 
 [source]
 ----
-quay.io/agnosticd/ee-multicloud:chained-2025-06-24
+quay.io/agnosticd/ee-multicloud:chained-2025-06-30
 ----
 
-IMPORTANT: Note the `chained` prefix before the build date.
+IMPORTANT: Note the `chained` prefix before the build date. Also `2025-06-30` is the first fully working tag for chained execution.
 
 === Bastion Host Changes
 * *No Python virtualenv*: There is no longer a Python `virtualenv` installed on the bastion host

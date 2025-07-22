@@ -18,14 +18,6 @@
       name: cluster
     register: r_console
     retries: 30
-
-  - name: "Determine web console URL ({{ current_cluster_name }})"
-    kubernetes.core.k8s_info:
-      api_version: config.openshift.io/v1
-      kind: Console
-      name: cluster
-    register: r_console
-    retries: 30
     delay: 5
     until:
     - r_console.resources | length > 0
@@ -82,7 +74,7 @@
 - name: "Debug cluster info for {{ current_cluster_name }}"
   ansible.builtin.debug:
     msg:
-      - "Cluster: {{ current_cluster_name }}"
-      - "API URL: {{ openshift_api_url }}"
-      - "Console URL: {{ openshift_console_url }}"
-      - "Ingress Domain: {{ openshift_cluster_ingress_domain }}"
+      - "current_cluster_name: {{ current_cluster_name }}"
+      - "openshift_api_url: {{ openshift_api_url }}"
+      - "openshift_console_url: {{ openshift_console_url }}"
+      - "openshift_cluster_ingress_domain: {{ openshift_cluster_ingress_domain }}"

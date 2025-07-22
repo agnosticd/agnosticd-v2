@@ -4,12 +4,20 @@
     msg: |
       openshift_workload_deployer_clusters: {{ openshift_workload_deployer_clusters }}
       openshift_workload_deployer_workloads: {{ openshift_workload_deployer_workloads }}
-    verbosity: 2
+    # verbosity: 2
 
 - name: Create cluster lookup dictionary for easier access
   ansible.builtin.set_fact:
     _cluster_configs: "{{ _cluster_configs | default({}) | combine({item.key: item.value}) }}"
   loop: "{{ openshift_workload_deployer_clusters | map('dict2items') | list | flatten }}"
+
+- name: Debug dictionary
+  ansible.builtin.debug:
+    var: _cluster_configs
+
+- name: Debug list
+  ansible.builtin.debug:
+    var: openshift_workload_deployer_clusters | map('dict2items') | list
 
 - name: Get cluster information for each cluster
   ansible.builtin.include_tasks: get_cluster_info.yml
@@ -20,8 +28,8 @@
   vars:
     current_cluster_name: "{{ cluster_pair[0].key }}"
     current_cluster_config: "{{ cluster_pair[0].value }}"
-    current_cluster_k8s_auth_host: "https://{{ current_cluster_config.sandbox_openshift_api_url }}:6443"
-    current_cluster_k8s_auth_api_key: "{{ current_cluster_config.sandbox_openshift_api_token }}"
+    current_cluster_k8s_auth_host: "https://{{ current_cluster_config.api_url }}:6443"
+    current_cluster_k8s_auth_api_key: "{{ current_cluster_config.api_token }}"
     current_cluster_k8s_auth_verify_ssl: false
 
 - name: Debug final cluster info dictionary
@@ -33,8 +41,8 @@
     name: "{{ workload_item.0.name }}"
     apply:
       environment:
-        K8S_AUTH_HOST: "https://{{ _cluster_configs[workload_item.1].sandbox_openshift_api_url }}:6443"
-        K8S_AUTH_API_KEY: "{{ _cluster_configs[workload_item.1].sandbox_openshift_api_token }}"
+        K8S_AUTH_HOST: "https://{{ _cluster_configs[workload_item.1].api_url }}:6443"
+        K8S_AUTH_API_KEY: "{{ _cluster_configs[workload_item.1].api_token }}"
         K8S_AUTH_VERIFY_SSL: false
   loop: "{{ openshift_workload_deployer_workloads | subelements('clusters') }}"
   loop_control:

@@ -19,13 +19,13 @@
     when: not install_operator_skip_operatorgroup | default(false) | bool
     kubernetes.core.k8s:
       state: present
-      definition: "{{ lookup('template', 'operatorgroup.yaml.j2') | from_yaml }}"
+      template: operatorgroup.yaml.j2
 
 - name: "Create CatalogSource for use with catalog snapshot ({{ install_operator_name }})"
   when: install_operator_catalogsource_setup | bool
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', 'catalogsource.yaml.j2') | from_yaml }}"
+    template: catalogsource.yaml.j2
 
 - name: "Set subscription channel to provided channel ({{ install_operator_name }})"
   when: install_operator_channel | default("") | length > 0
@@ -71,7 +71,7 @@
 - name: "Create operator subscription ({{ install_operator_name }})"
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', 'subscription.yaml.j2') | from_yaml }}"
+    template: subscription.yaml.j2
 
 - name: "Wait until InstallPlan is created ({{ install_operator_name }})"
   kubernetes.core.k8s_info:
@@ -111,7 +111,7 @@
   when: r_install_plan.resources[0].status.phase is match("RequiresApproval")
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', 'installplan.yaml.j2') }}"
+    template: installplan.yaml.j2
 
 - name: Get installed CSV and wait until it is installed
   block:
@@ -140,8 +140,8 @@
       name: "{{ r_subscription.resources[0].status.currentCSV }}"
       namespace: "{{ install_operator_namespace }}"
     register: r_csv
-    retries: 10
-    delay: 30
+    retries: 30
+    delay: 10
     until:
     - r_csv.resources[0].status.phase is defined
     - r_csv.resources[0].status.phase | length > 0

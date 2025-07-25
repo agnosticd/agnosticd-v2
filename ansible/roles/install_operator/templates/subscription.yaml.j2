@@ -13,7 +13,11 @@ spec:
 {% endif %}
   name: {{ install_operator_packagemanifest_name }}
 {% if install_operator_catalogsource_setup | default(false) | bool %}
+{%   if install_operator_catalogsource_name | default("") | length > 0 %}
   source: {{ install_operator_catalogsource_name }}
+{%   else %}
+  source: {{ install_operator_name }}-catalogsource
+{%   endif %}
   sourceNamespace: {{ install_operator_catalogsource_namespace }}
 {% else %}
   source: {{ install_operator_catalog }}

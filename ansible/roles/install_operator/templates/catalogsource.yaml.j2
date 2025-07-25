@@ -2,7 +2,11 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
+{% if install_operator_catalogsource_name | default("") | length > 0 %}
   name: {{ install_operator_catalogsource_name }}
+{% else %}
+  name: {{ install_operator_name }}-catalogsource
+{% endif %}
   namespace: {{ install_operator_catalogsource_namespace }}
 spec:
   sourceType: grpc

@@ -56,7 +56,7 @@
     block:
     - name: Add the service (type LoadBalancer) for SNO
       kubernetes.core.k8s:
-        definition: "{{ lookup('ansible.builtin.template', 'templates/sno_svc.yaml') }}"
+        template: sno_svc.yaml
         wait: true
         wait_timeout: 300
       vars:
@@ -148,7 +148,7 @@
         svcname: "{{ ai_ocp_vmname_master_prefix }}-svc"
         namespace: "{{ ai_ocp_namespace }}"
       kubernetes.core.k8s:
-        definition: "{{ lookup('ansible.builtin.template', 'templates/masters_svc.yaml') }}"
+        template: masters_svc.yaml
         wait: true
         wait_timeout: 300
 
@@ -201,7 +201,7 @@
         svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
         namespace: "{{ ai_ocp_namespace }}"
       kubernetes.core.k8s:
-        definition: "{{ lookup('ansible.builtin.template', 'templates/workers_svc.yaml') }}"
+        template: workers_svc.yaml
         wait: true
         wait_timeout: 300
 
@@ -254,7 +254,7 @@
       network_name: "{{ cluster_name }}-openshift"
       namespace: "{{ ai_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'templates/net-attach-def.yaml') }}"
+      template: net-attach-def.yaml
       wait: true
       wait_timeout: 300
 
@@ -397,7 +397,7 @@
 
   - name: Create PVC for the installation ISO
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'templates/installation-iso.yaml') }}"
+      template: installation-iso.yaml
       wait: true
       wait_timeout: 300
     vars:

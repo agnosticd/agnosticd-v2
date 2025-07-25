@@ -68,7 +68,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'certificate.yaml') }}"
+      template: certificate.yaml
       wait: true
       wait_timeout: 300
 
@@ -89,7 +89,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'pullsecretfile.yaml') }}"
+      template: pullsecretfile.yaml
       wait: true
       wait_timeout: 300
 
@@ -103,7 +103,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'secret-kubeconfig.yaml') }}"
+      template: secret-kubeconfig.yaml
       wait: true
       wait_timeout: 300
 
@@ -114,7 +114,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'hostedcluster.yaml') }}"
+      template: hostedcluster.yaml
       wait: true
       wait_timeout: 300
 
@@ -122,7 +122,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'nodepool.yaml') }}"
+      template: nodepool.yaml
       wait: true
       wait_timeout: 300
 
@@ -205,7 +205,7 @@
     vars:
       namespace: "{{ hcp_ocp_namespace }}"
     kubernetes.core.k8s:
-      definition: "{{ lookup('ansible.builtin.template', 'workers_svc.yaml') }}"
+      template: workers_svc.yaml
       wait: true
       wait_timeout: 300
 
@@ -301,7 +301,7 @@
   environment:
     K8S_AUTH_KUBECONFIG: /home/{{ ansible_user }}/.kube/config
   kubernetes.core.k8s:
-    definition: "{{ lookup('ansible.builtin.template', 'clusterrolebinding.yaml') }}"
+    template: clusterrolebinding.yaml
 
 - name: Gather and Print cluster info
   ansible.builtin.import_tasks: print_cluster_info.yml

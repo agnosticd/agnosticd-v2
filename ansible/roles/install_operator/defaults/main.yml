@@ -27,10 +27,6 @@ install_operator_catalog: redhat-operators
 install_operator_channel: ""
 # install_operator_channel: "4.7"
 
-# Set automatic InstallPlan approval. If set to false it is also suggested
-# to set the starting_csv to pin a specific version
-install_operator_automatic_install_plan_approval: true
-
 # CSV Name. Some operators (pipelines, cough, cough) use different CSV names from
 # the operator or package manifest names.
 install_operator_csv_nameprefix: "{{ install_operator_name }}"
@@ -41,7 +37,15 @@ install_operator_csv_nameprefix: "{{ install_operator_name }}"
 # Highly recommended to be set when using a catalog snapshot but can be
 # empty to get the latest available in the channel at the time when
 # the catalog snapshot got created.
+# Automatic install plan approval must be false when using a starting CSV.
 install_operator_starting_csv: ""
+
+# Set automatic InstallPlan approval.
+# This must be false when using a starting CSV to prevent multiple updates
+# upon installation of the operator.
+# It _can_ be set to false when not using a starting CSV to prevent further updates
+# to the operator when new versions are released on longer running clusters.
+install_operator_automatic_install_plan_approval: true
 
 # List of Namespaces for the Operator to manage.
 # Empty list to manage the entire cluster
@@ -52,7 +56,15 @@ install_operator_manage_namespaces: []
 # Extra configuration to add to the subscription
 # Whatever yaml definition is specified here will make it into the subscription
 # .spec.config section.
-install_operator_subscription_config: ""
+install_operator_subscription_config: {}
+
+# If your operator doesnt need to create a OperatorGroup, because it already exists, set to true
+install_operator_skip_operatorgroup: false
+
+# If issues with the operator, when creating the CSV, the playbook will continue executing.
+# Accepted values: true , false
+# Default value: false
+install_operator_install_csv_ignore_error: false
 
 # -----------------------------------------------------
 # Custom Catalog Source, e.g. Operator Catalog Snapshot
@@ -84,11 +96,3 @@ install_operator_catalogsource_image_tag: "v4.18_2025_06_02"
 # install_operator_catalogsource_secrets:
 # - my_pull_secret_name
 install_operator_catalogsource_pullsecrets: []
-
-# If issues with the operator, when creating the CSV, the playbook will continue executing.
-# Accepted values: true , false
-# Default value: false
-install_operator_install_csv_ignore_error: false
-
-# If your operator doesnt need to create a OperatorGroup, because it already exists, set to true
-install_operator_skip_operatorgroup: false

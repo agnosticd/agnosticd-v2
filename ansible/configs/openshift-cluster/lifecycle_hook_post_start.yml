@@ -54,7 +54,7 @@
   gather_facts: false
   tasks:
   - name: Perform actions on start
-    when: ACTION == 'start'
+    when: ACTION == "start"
     block:
     - name: Test the bastion host is available, if not skip approve csr and pod cleanup
       ansible.builtin.wait_for_connection:

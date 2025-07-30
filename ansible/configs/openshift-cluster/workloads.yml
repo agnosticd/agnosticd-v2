@@ -11,7 +11,7 @@
     ansible.builtin.include_role:
       name: "{{ workload_loop_var }}"
     vars:
-      ACTION: "provision"
+      ACTION: provision
     loop: "{{ workloads }}"
     loop_control:
       loop_var: workload_loop_var

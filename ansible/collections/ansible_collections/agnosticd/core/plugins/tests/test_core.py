@@ -392,13 +392,6 @@ def test_agnosticd_filter_out_installed_collections():
                         "name": "openstack.cloud",
                         "version": "1.7.2"
                     }
-                ],
-                "roles": [
-                    {
-                        "name": "ftl-injector",
-                        "src": "https://github.com/redhat-gpte-devopsautomation/ftl-injector",
-                        "version": "v0.17"
-                    }
                 ]
             },
             "installed_collections":
@@ -446,13 +439,6 @@ def test_agnosticd_filter_out_installed_collections():
                         "name": "google.cloud",
                         "version": "1.0.2"
                     },
-                ],
-                "roles": [
-                    {
-                        "name": "ftl-injector",
-                        "src": "https://github.com/redhat-gpte-devopsautomation/ftl-injector",
-                        "version": "v0.17"
-                    }
                 ]
             },
         },

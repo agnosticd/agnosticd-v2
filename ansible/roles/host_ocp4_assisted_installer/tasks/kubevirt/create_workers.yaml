@@ -5,8 +5,9 @@
       - masquerade: {}
         model: virtio
         name: default
+        macAddress: "{{ ai_workers_macs[_index|int-1] }}"
       - name: "{{ network }}"
-        macAddress: "{{ ai_masters_macs2[_index | int - 1] }}"
+        macAddress: "{{ ai_workers_macs2[_index|int-1] }}"
         bridge: {}
     _instance_networks:
       - name: default
@@ -16,11 +17,11 @@
         multus:
           networkName: "{{ network_name }}"
 
-- name: Add attach masters networks if defined
-  when: ai_attach_masters_networks | default([]) | length > 0
+- name: Add attach workers networks if defined
   vars:
     _network_name: "{{ _network.split('/')[1] if '/' in _network else _network + guid }}"
     _network_multusname: "{{ _network if '/' in _network else _network + guid }}"
+  when: ai_attach_workers_networks | default([]) | length > 0
   ansible.builtin.set_fact:
     _instance_interfaces: >-
       {{
@@ -28,7 +29,7 @@
           'name': _network_name,
           'bridge': {},
           'model': 'virtio',
-          'macAddress': ai_attach_masters_macs[_network][_index|int-1]
+          'macAddress': ai_attach_workers_macs[_network][_index|int-1]
         } ]
       }}
     _instance_networks: >-
@@ -37,7 +38,7 @@
               'name': _network_name,
               'multus': {'networkName': _network_multusname}
           }] }}
-  loop: "{{ ai_attach_masters_networks }}"
+  loop: "{{ ai_attach_workers_networks }}"
   loop_control:
     loop_var: _network
 
@@ -50,18 +51,11 @@
       - dataVolume:
           name: "{{ vmname }}-installation-cdrom"
         name: installation-cdrom
-      - dataVolume:
-          name: "{{ vmname }}-etcd"
-        name: etcd
     _instance_disks:
       - bootOrder: 1
         disk:
           bus: virtio
         name: rootdisk
-      - bootOrder: 3
-        disk:
-          bus: virtio
-        name: etcd
       - bootOrder: 2
         cdrom:
           bus: sata
@@ -81,11 +75,11 @@
             'dataVolume': {'name': _disk.metadata.name}
         }
     ] }}"
-  loop: "{{ ai_masters_extra_disks | default([]) | list }}"
+  loop: "{{ ai_workers_extra_disks | default([]) | list }}"
   loop_control:
     loop_var: _disk
 
-- name: Create Master virtual machine
+- name: Create Worker virtual machine
   kubevirt.core.kubevirt_vm:
     api_version: kubevirt.io/v1
     host: "{{ sandbox_openshift_api_url }}"
@@ -93,14 +87,14 @@
     validate_certs: false
     name: "{{ vmname }}"
     namespace: "{{ namespace }}"
-    data_volume_templates: "{{ _datavolume + (ai_masters_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
+    data_volume_templates: "{{ _datavolume + (ai_workers_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
     running: true
     wait: false
     annotations:
       vm.kubevirt.io/os: rhel8
     labels:
       kubevirt.io/domain: "{{ vmname }}"
-      role: control-plane
+      role: worker
     spec: "{{ _spec | from_yaml }}"
   vars:
     _datavolume:
@@ -126,25 +120,13 @@
               requests:
                 storage: 100Gi
             storageClassName: "{{ storageclass }}"
-
-      - metadata:
-          name: "{{ vmname }}-etcd"
-        spec:
-          preallocation: false
-          source:
-            blank: {}
-          storage:
-            resources:
-              requests:
-                storage: 30Gi
-            storageClassName: "{{ ai_local_storageclass }}"
-            volumeMode: Filesystem
     _spec: |
       domain:
         cpu:
-          cores: {{ ai_control_plane_cores | int }}
+          cores: {{ ai_workers_cores | int }}
           sockets: 1
           threads: 1
+          maxSockets: 2
           model: host-passthrough
         devices:
           disks: {{ _instance_disks | replace('INSTANCENAME', vmname) }}
@@ -154,19 +136,17 @@
           type: pc-q35-rhel8.6.0
         resources:
           requests:
-            memory: "{{ ai_control_plane_memory }}"
+            memory: "{{ ai_workers_memory }}"
           limits:
-            memory: "{{ ai_control_plane_memory }}"
+            memory: "{{ ai_workers_memory }}"
       readinessProbe:
-        httpGet:
-          path: /healthz
-          port: 6443
-          scheme: HTTPS
+        tcpSocket:
+          port: 80
         initialDelaySeconds: 120
-        periodSeconds: 1
+        periodSeconds: 5
+      evictionStrategy: LiveMigrate
       networks: {{ _instance_networks }}
       terminationGracePeriodSeconds: 180
-      evictionStrategy: None
       volumes: {{ _instance_volumes | replace('INSTANCENAME', vmname) }}
 
 - name: Wait till VM is running
@@ -180,5 +160,5 @@
     namespace: "{{ namespace }}"
   register: r_vm_status
   until: r_vm_status.resources[0].status.printableStatus|default('') == "Running"
-  retries: 120
+  retries: 30
   delay: 10

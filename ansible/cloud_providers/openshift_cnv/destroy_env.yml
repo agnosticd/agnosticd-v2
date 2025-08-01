@@ -8,8 +8,15 @@
   gather_facts: false
   become: false
   tasks:
-  - name: Run openshift-cnv-resources
+  - name: Run resources role
     vars:
       ACTION: destroy
     ansible.builtin.include_role:
-      name: openshift_cnv_resources
+      name: agnosticd.cloud_provider_openshift_cnv.resources
+
+  - name: Run infra_dns role
+    when: cluster_dns_server is defined or route53_aws_zone_id is defined
+    vars:
+      _dns_state: absent
+    ansible.builtin.include_role:
+      name: infra_dns

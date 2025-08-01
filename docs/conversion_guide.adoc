@@ -103,7 +103,6 @@ install_satellite_repositories: true
 ----
 install_bastion: true
 bastion_student_user_name: lab-user
-bastion_install_ftl: false
 ----
 
 == Migration Example: OpenShift Cluster (Workshop) Config

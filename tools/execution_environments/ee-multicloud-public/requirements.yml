@@ -33,10 +33,6 @@ collections:
 
 - name: containers.podman
 
-- name: equinix.metal
-# For historic compability
-- name: equinix.cloud
-
 # requirements.txt from the collection
 - name: google.cloud
 
@@ -49,8 +45,4 @@ collections:
 # jsonpatch
 # From requirements.txt
 - name: kubernetes.core
-
 - name: kubevirt.core
-
-# openstacksdk>=1.0.0
-- name: openstack.cloud

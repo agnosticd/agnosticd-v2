@@ -24,12 +24,6 @@ requirements_content:
     type: git
     version: main
 
-  # External role to setup grader host virtualenv and FTL grading infra
-  # roles:
-  # - name: ftl-injector
-  #   src: https://github.com/redhat-gpte-devopsautomation/ftl-injector
-  #   version: v0.20.0
-
 # ===================================================================
 # CNV Specific settings
 #     See ansible/configs/openshift-cluster/default_vars_cnv.yml for
@@ -40,7 +34,7 @@ requirements_content:
 cloud_tags:
 - owner: wkulhane@redhat.com
 - Purpose: development
-- env_type: "{{ env_type }}"
+- config: "{{ config }}"
 - guid: "{{ guid }}"
 
 # ===================================================================
@@ -70,6 +64,8 @@ bastion_student_user_name: student
 # -------------------------------------------------------------------
 cluster_name: ocp
 
+cluster_dns_zone: dynamic.redhatworkshops.io
+  
 host_ocp4_installer_root_url: https://mirror.openshift.com/pub/openshift-v4/clients
 host_ocp4_installer_version: "4.19"
 host_ocp4_deploy_installation_method: openshift_assisted

@@ -49,10 +49,6 @@ bastion_student_user_password: ""
 # Password length for generated passwords
 bastion_student_user_password_length: 12
 
-# FTL is used for grading and solving. It will pull in the external ftl-injector role.
-# When enabled a requirements.yml must exist in the config to specify the ftl-injector role and tag.
-bastion_install_ftl: false
-
 # Optional public key for authorized_keys
 # bastion_student_user_key: ""
 

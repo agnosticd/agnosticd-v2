@@ -5,9 +5,9 @@
       - masquerade: {}
         model: virtio
         name: default
-        macAddress: "{{ ai_masters_macs[_index|int-1] }}"
+        macAddress: "{{ ai_control_plane_macs[_index | int-1] }}"
       - name: "{{ network }}"
-        macAddress: "{{ ai_masters_macs2[_index|int-1] }}"
+        macAddress: "{{ ai_control_plane_macs2[_index | int-1] }}"
         bridge: {}
     _instance_networks:
       - name: default
@@ -17,11 +17,11 @@
         multus:
           networkName: "{{ network_name }}"
 
-- name: Add attach masters networks if defined
+- name: Add attach control plane networks if defined
   vars:
     _network_name: "{{ _network.split('/')[1] if '/' in _network else _network + guid }}"
     _network_multusname: "{{ _network if '/' in _network else _network + guid }}"
-  when: ai_attach_masters_networks | default([]) | length > 0
+  when: ai_attach_control_plane_networks | default([]) | length > 0
   ansible.builtin.set_fact:
     _instance_interfaces: >-
       {{
@@ -29,7 +29,7 @@
           'name': _network_name,
           'bridge': {},
           'model': 'virtio',
-          'macAddress': ai_attach_masters_macs[_network][_index|int-1]
+          'macAddress': ai_attach_control_plane_macs[_network][_index | int-1]
         } ]
       }}
     _instance_networks: >-
@@ -38,7 +38,7 @@
               'name': _network_name,
               'multus': {'networkName': _network_multusname}
           }] }}
-  loop: "{{ ai_attach_masters_networks }}"
+  loop: "{{ ai_attach_control_plane_networks }}"
   loop_control:
     loop_var: _network
 
@@ -82,19 +82,19 @@
             'dataVolume': {'name': _disk.metadata.name}
         }
     ] }}"
-  loop: "{{ ai_masters_extra_disks | default([]) | list }}"
+  loop: "{{ ai_control_plane_extra_disks | default([]) | list }}"
   loop_control:
     loop_var: _disk
 
-- name: Create Master virtual machine
+- name: Create control plane virtual machine
   kubevirt.core.kubevirt_vm:
     api_version: kubevirt.io/v1
     host: "{{ sandbox_openshift_api_url }}"
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key|default(sandbox_openshift_api_key) }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key | default(sandbox_openshift_api_key) }}"
     validate_certs: false
     name: "{{ vmname }}"
     namespace: "{{ namespace }}"
-    data_volume_templates: "{{ _datavolume + (ai_masters_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
+    data_volume_templates: "{{ _datavolume + (ai_control_plane_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
     running: true
     wait: false
     annotations:
@@ -127,7 +127,6 @@
               requests:
                 storage: 100Gi
             storageClassName: "{{ storageclass }}"
-
       - metadata:
           name: "{{ vmname }}-etcd"
         spec:
@@ -169,17 +168,3 @@
       terminationGracePeriodSeconds: 180
       evictionStrategy: None
       volumes: {{ _instance_volumes | replace('INSTANCENAME', vmname) }}
-
-- name: Wait till VM is running
-  kubernetes.core.k8s_info:
-    api_version: kubevirt.io/v1
-    host: "{{ sandbox_openshift_api_url }}"
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key|default(sandbox_openshift_api_key) }}"
-    validate_certs: false
-    kind: VirtualMachine
-    name: "{{ vmname }}"
-    namespace: "{{ namespace }}"
-  register: r_vm_status
-  until: r_vm_status.resources[0].status.printableStatus|default('') == "Running"
-  retries: 120
-  delay: 10

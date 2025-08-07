@@ -121,7 +121,7 @@ worker_instance_count: 2
 # Use 4.19.1 for exactly the specified release
 host_ocp4_installer_version: "4.19"
 
-# See role host-ocp4-installer for additional OpenShift 4 Installer options
+# See roles host_ocp4_installer and host_ocp4_deploy for additional OpenShift 4 Installer options
 # E.g. OpenShift Cluster processor architectore or OpenShift installer download location
 
 # Pull secret needs to be defined in secrets

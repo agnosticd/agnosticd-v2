@@ -41,7 +41,7 @@ rm bw bw.zip
 # aws_version=2.4.23
 # curl -s -L "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m)-${aws_version}.zip" \
 #     -o "awscliv2.zip"
-curl -s -L https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+curl -s -L "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" \
     -o "awscliv2.zip"
 
 unzip -q awscliv2.zip

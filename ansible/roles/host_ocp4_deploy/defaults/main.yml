@@ -5,3 +5,6 @@
 # - openshift_assisted
 # - openshift_hcp_cnv
 host_ocp4_deploy_installation_method: openshift_install
+
+# Install OpenShift (can be set to false to skip the installation on runs where the cluster already exists)
+host_ocp4_deploy_install_ocp4: true

@@ -381,7 +381,26 @@
       static_network_config: "{{ static_network_config }}"
     register: newinfraenv
 
-  - name: Create PVC for the installation ISO
+  - name: Check if installation ISO DataVolume already exists
+    kubernetes.core.k8s_info:
+      api_version: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      name: installation-iso
+      namespace: "{{ ai_ocp_namespace }}"
+    register: r_existing_datavolume
+
+  - name: Delete existing installation ISO DataVolume if it exists
+    when: r_existing_datavolume.resources | length > 0
+    kubernetes.core.k8s:
+      api_version: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      name: installation-iso
+      namespace: "{{ ai_ocp_namespace }}"
+      state: absent
+      wait: true
+      wait_timeout: 120
+
+  - name: Create DataVolume for the installation ISO
     kubernetes.core.k8s:
       template: installation_iso.yaml.j2
       wait: true
@@ -389,7 +408,7 @@
     vars:
       image_url: "{{ newinfraenv.result.download_url }}"
       namespace: "{{ ai_ocp_namespace }}"
-      pvcname: "installation-iso"
+      pvcname: installation-iso
 
   - name: Create three control plane VMs for full cluster
     ansible.builtin.include_tasks: kubevirt/create_control_plane_etcd.yaml
@@ -480,18 +499,34 @@
       wait_timeout: 600
 
   - name: Start cluster installation
+    delegate_to: bastions
+    run_once: true
     rhpds.assisted_installer.install_cluster:
       cluster_id: "{{ newcluster.result.id }}"
       offline_token: "{{ ai_offline_token }}"
       wait_timeout: 5400
     async: 5400
     poll: 60
+    register: cluster_install_job
+
+  - name: Check cluster installation status
+    delegate_to: bastions
+    run_once: true
+    ansible.builtin.async_status:
+      jid: "{{ cluster_install_job.ansible_job_id }}"
+    register: cluster_install_result
+    until: cluster_install_result.finished
+    retries: 90
+    delay: 60
+    when: cluster_install_job.ansible_job_id is defined
 
   - name: Obtain OpenShift cluster credentials
-    register: ai_credentials
+    delegate_to: bastions
+    run_once: true
     rhpds.assisted_installer.get_credentials:
       cluster_id: "{{ newcluster.result.id }}"
       offline_token: "{{ ai_offline_token }}"
+    register: ai_credentials
 
   - name: Display credentials for debugging purpose
     ansible.builtin.debug:

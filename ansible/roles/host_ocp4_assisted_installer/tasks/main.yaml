@@ -499,7 +499,7 @@
       wait_timeout: 600
 
   - name: Start cluster installation
-    delegate_to: bastions
+    delegate_to: "{{ groups['bastions'][0] }}"
     run_once: true
     rhpds.assisted_installer.install_cluster:
       cluster_id: "{{ newcluster.result.id }}"
@@ -510,7 +510,7 @@
     register: cluster_install_job
 
   - name: Check cluster installation status
-    delegate_to: bastions
+    delegate_to: "{{ groups['bastions'][0] }}"
     run_once: true
     ansible.builtin.async_status:
       jid: "{{ cluster_install_job.ansible_job_id }}"
@@ -521,7 +521,7 @@
     when: cluster_install_job.ansible_job_id is defined
 
   - name: Obtain OpenShift cluster credentials
-    delegate_to: bastions
+    delegate_to: "{{ groups['bastions'][0] }}"
     run_once: true
     rhpds.assisted_installer.get_credentials:
       cluster_id: "{{ newcluster.result.id }}"

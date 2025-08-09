@@ -2,8 +2,7 @@
 ansible-navigator:
   execution-environment:
     container-engine: podman
-    image: quay.io/agnosticd/ee-multicloud:chained-2025-06-30
+    image: quay.io/agnosticd/ee-multicloud:chained-2025-08-07
     pull:
       policy: missing
-
   format: json

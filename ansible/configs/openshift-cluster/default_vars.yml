@@ -49,10 +49,6 @@ bastion_student_user_password: ""
 # Password length for generated passwords
 bastion_student_user_password_length: 12
 
-# FTL is used for grading and solving. It will pull in the external ftl-injector role.
-# When enabled a requirements.yml must exist in the config to specify the ftl-injector role and tag.
-bastion_install_ftl: false
-
 # Optional public key for authorized_keys
 # bastion_student_user_key: ""
 
@@ -125,7 +121,7 @@ worker_instance_count: 2
 # Use 4.19.1 for exactly the specified release
 host_ocp4_installer_version: "4.19"
 
-# See role host-ocp4-installer for additional OpenShift 4 Installer options
+# See roles host_ocp4_installer and host_ocp4_deploy for additional OpenShift 4 Installer options
 # E.g. OpenShift Cluster processor architectore or OpenShift installer download location
 
 # Pull secret needs to be defined in secrets

@@ -32,16 +32,6 @@
     regexp: "^export CLOUDUSER"
     line: "export CLOUDUSER={{ ansible_user }}"
 
-- name: Install FTL
-  when: bastion_install_ftl | default(false) | bool
-  block:
-  - name: Install FTL
-    ansible.builtin.include_role:
-      name: ftl-injector
-    vars:
-      student_login: "{{ bastion_student_user_name }}"
-      use_python3: true
-
 - name: Set up student user
   when: bastion_setup_student_user | bool
   ansible.builtin.include_tasks: setup_student_user.yml

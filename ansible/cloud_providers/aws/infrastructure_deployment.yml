@@ -47,7 +47,7 @@
 
   - name: Create SSH provision key
     when:
-    - instances | default([]) | length
+    - instances | default([]) | length > 0
     - ssh_provision_key_name is undefined
     ansible.builtin.include_role:
       name: infra_create_ssh_provision_key

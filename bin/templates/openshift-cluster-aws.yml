@@ -19,12 +19,6 @@ requirements_content:
     type: git
     version: main
 
-  # External role to setup grader host virtualenv and FTL grading infra
-  # roles:
-  # - name: ftl-injector
-  #   src: https://github.com/redhat-gpte-devopsautomation/ftl-injector
-  #   version: v0.20.0
-
 # ===================================================================
 # AWS Specific settings
 #     See ansible/configs/openshift-cluster/default_vars_aws.yml for

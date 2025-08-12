@@ -125,7 +125,11 @@
   - name: Run installation on the bastion
     delegate_to: "{{ groups['bastions'][0] }}"
     block:
-    - name: Make sure Python 3.11 is installed on the bastion
+    - name: Get facts
+      ansible.builtin.setup:
+
+    - name: Make sure Python 3.11 is installed on the bastion for RHEL 9
+      when: ansible_distribution_major_version == '9'
       become: true
       ansible.builtin.package:
         name:
@@ -149,7 +153,7 @@
         verbosity: 2
 
     - name: Wait for cluster installation to be completed
-      when: 
+      when:
       - not cluster_install_job.finished | default(false) | bool
       - not cluster_install_job.result.status | default('') | lower() == 'installed'
       - cluster_install_job.ansible_job_id is defined

@@ -37,7 +37,7 @@
   vars:
     svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
   kubernetes.core.k8s:
-    template: workers_svc.yaml.j2
+    definition: "{{ lookup('ansible.builtin.template', 'workers_svc.yaml.j2') | from_yaml }}"
     wait: true
     wait_timeout: 300
 

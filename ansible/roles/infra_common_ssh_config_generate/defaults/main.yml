@@ -1,6 +1,6 @@
 ---
 default_key_name: ~/.ssh/{{ key_name | default('') }}.pem
-remote_user_map:
+cloud_user_map:
   aws: ec2-user
   openshift_cnv: cloud-user
   azure: azure

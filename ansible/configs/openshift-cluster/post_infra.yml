@@ -92,7 +92,6 @@
       agnosticd.core.agnosticd_user_info:
         msg: "{{ item }}"
       loop:
-      - "Remote User: {{ remote_user }}"
       - "RHEL Bastion Host: {{ rhel_remote_host }}"
       - "Windows Host(s): {{ windows_remote_hosts }}"
       - "Windows Password: {{ windows_password }}"

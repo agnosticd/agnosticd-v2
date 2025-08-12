@@ -9,7 +9,6 @@ cloud_provider: openshift_cnv
 # This is the user that Ansible will use to connect to the nodes it is
 # configuring from the admin/control host
 ansible_user: cloud-user
-remote_user: cloud-user
 
 # Whether to wait for an ack from the DNS servers before continuing
 wait_for_dns: true

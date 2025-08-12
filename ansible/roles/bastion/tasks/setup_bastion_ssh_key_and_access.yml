@@ -32,7 +32,7 @@
   - l_inventory_name not in groups.windows | default([])
   - l_inventory_name not in groups.network | default([])
   ansible.posix.authorized_key:
-    user: "{{ hostvars[l_inventory_name].remote_user | default(remote_user) | default(ansible_user) }}"
+    user: "{{ ansible_user }}"
     state: present
     key: "{{ hostvars[groups.bastions | first].bastion_ssh_pubkey_content }}"
     comment: "bastion"

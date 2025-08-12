@@ -50,7 +50,7 @@
     path: '/etc/sudoers'
     state: present
     line: "{{ bastion_student_user_name }}         ALL=(ALL)       NOPASSWD: ALL"
-    insertafter: "'^{{ remote_user | default(ansible_user) }}"
+    insertafter: "'^{{ ansible_user }}"
 
 - name: Restart sshd
   ansible.builtin.service:

@@ -9,17 +9,15 @@
     vars:
       # agnosticd_cloud_providers:
       # - azure
-      # - osp
       # - gcp
       # - ibm
       # - vmc
-      # - test
       # - vmware_ibm
       # - multi
       # - shared_openshift
       agnosticd_cloud_providers:
-      - aws
       - none
+      - aws
       - openshift_cnv
     ansible.builtin.assert:
       that: cloud_provider in agnosticd_cloud_providers
@@ -31,8 +29,3 @@
 
 - name: Include global variables from the config
   ansible.builtin.import_playbook: include_vars.yml
-
-# Now done by the EE entrypoint
-# - name: Install Galaxy roles for the config
-#   ansible.builtin.import_playbook: install_galaxy_roles.yml
-#   ansible.builtin.import_playbook: install_dynamic_dependencies.yml

@@ -2,14 +2,14 @@
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
-  name: {{ pvcname  }}
-  namespace: {{ namespace }}
+  name: installation-iso
+  namespace: {{ ai_ocp_namespace }}
   annotations:
     cdi.kubevirt.io/storage.deleteAfterCompletion: "false"
 spec:
   source:
     http:
-      url: "{{ image_url }}"
+      url: {{ image_url }}
   pvc:
     volumeMode: Block
     accessModes:

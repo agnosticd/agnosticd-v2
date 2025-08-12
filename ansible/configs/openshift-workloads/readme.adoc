@@ -14,7 +14,7 @@ It can access a single or multiple clusters by direct connection the the cluster
 [source,yaml]
 ----
 cloud_provider: none
-env_type: ocp-workloads
+config: ocp-workloads
 
 openshift_workloads:
 - ocp4-workload-fuse-ignite
@@ -34,7 +34,7 @@ target_host: bastion.dev.mycluster.mydomain.com
 ----
 cloud_provider: none
 guid: changeme
-env_type: ocp-workloads
+config: ocp-workloads
 
 cluster_workloads:
 - name: ocp4_workload_authentication

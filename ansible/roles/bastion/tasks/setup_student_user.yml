@@ -61,7 +61,7 @@
   vars:
     _bastion_inventory_name: "{{ groups['bastions'][0] }}"
   block:
-  - name: Set _bastion_public_hostname from inventory (not an OpenShift Cluster config)
+  - name: Set _bastion_public_hostname from inventory (not an OpenShift cluster config)
     when: cluster_dns_zone | default("") | length == 0
     ansible.builtin.set_fact:
       _bastion_public_hostname: >-
@@ -72,17 +72,22 @@
   - name: Set _bastion_public_hostname from cluster_dns_zone
     when: cluster_dns_zone | default("") | length > 0
     block:
-    - name: Set Bastion Hostname (AWS)
+    - name: Set bastion hostname (AWS)
       when: cloud_provider == 'aws'
       ansible.builtin.set_fact:
         _bastion_public_hostname: "{{ hostvars[_bastion_inventory_name].shortname }}.{{ cluster_dns_zone }}"
 
-    - name: Set Bastion Hostname (GCP)
+    - name: Set bastion hostname (CNV)
+      when: cloud_provider == 'openshift_cnv'
+      ansible.builtin.set_fact:
+        _bastion_public_hostname: "{{ openshift_cnv_ssh_address }}"
+
+    - name: Set bastion hostname (Azure or GCP)
       when: cloud_provider == "azure" or cloud_provider == "gcp"
       ansible.builtin.set_fact:
         _bastion_public_hostname: "bastion.{{ cluster_dns_zone }}"
 
-    - name: Set Bastion Hostname (Other)
+    - name: Set bastion hostname (Fallback)
       when: _bastion_public_hostname | length == 0
       ansible.builtin.set_fact:
         _bastion_public_hostname: "{{ hostvars[_bastion_inventory_name].shortname }}.{{ cluster_dns_zone }}"

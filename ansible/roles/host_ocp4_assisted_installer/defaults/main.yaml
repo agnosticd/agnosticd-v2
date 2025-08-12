@@ -6,7 +6,7 @@ ai_ssh_authorized_key: "{{ lookup('ansible.builtin.file', hostvars.localhost.ssh
 ai_cluster_name: "{{ guid }}"
 ai_cluster_version: "{{ host_ocp4_installer_version | default('4.19') }}"
 ai_cluster_iso_type: minimal-iso
-ai_ocp_output_dir: "/home/{{ ansible_user }}/"
+ai_ocp_output_dir: "~{{ ansible_user }}"
 ai_ocp_namespace: "{{ sandbox_openshift_namespace | default(config + '-' + guid)}}"
 ai_storage_class: ocs-storagecluster-ceph-rbd
 ai_local_storageclass: hostpath-csi

@@ -7,7 +7,7 @@
     validate_certs: false
     kind: VirtualMachine
     name: "{{ vmname }}"
-    namespace: "{{ namespace }}"
+    namespace: "{{ ai_ocp_namespace }}"
   register: r_vm_status
   until: r_vm_status.resources[0].status.printableStatus | default('') == "Running"
   retries: 30

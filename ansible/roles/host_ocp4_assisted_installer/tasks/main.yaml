@@ -2,7 +2,7 @@
 - name: Set URLs for OpenShift GA releases (specific version)
   when: (host_ocp4_installer_version | string).split('.') | length >= 3
   ansible.builtin.set_fact:
-    ocp4_client_url: >-
+    openshift_client_download_url: >-
       {{ '{0}/ocp/{1}/openshift-client-linux-{1}.tar.gz'.format(
         host_ocp4_installer_root_url | default("https://mirror.openshift.com/pub/openshift-v4/clients"),
         host_ocp4_installer_version
@@ -11,17 +11,18 @@
 - name: Set URLs for OpenShift GA releases (latest stable)
   when: (host_ocp4_installer_version | string).split('.') | length == 2
   set_fact:
-    ocp4_client_url: >-
+    openshift_client_download_url: >-
       {{ '{0}/ocp/stable-{1}/openshift-client-linux.tar.gz'.format(
         host_ocp4_installer_root_url | default("https://mirror.openshift.com/pub/openshift-v4/clients"),
         host_ocp4_installer_version
       ) }}
 
-- name: Get the OpenShift CLI
+- name: Install the OpenShift CLI on the bastion
+  delegate_to: "{{ groups['bastions'][0] }}"
   become: true
   ansible.builtin.unarchive:
-    src: "{{ ocp4_client_url }}"
     remote_src: true
+    src: "{{ openshift_client_download_url }}"
     dest: /usr/bin
     mode: ug=rwx,o=rx
     owner: root
@@ -39,222 +40,31 @@
     host: "{{ sandbox_openshift_api_url }}"
   register: k8s_auth_results
 
-- name: Install OCP using Assisted Installer
+- name: Install OpenShift using Assisted Installer
   module_defaults:
     group/k8s:
       host: "{{ sandbox_openshift_api_url }}"
-      api_key: "{{ k8s_auth_results.k8s_auth.api_key|default(sandbox_openshift_api_key) }}"
+      api_key: "{{ k8s_auth_results.k8s_auth.api_key | default(sandbox_openshift_api_key) }}"
       validate_certs: false
   block:
   - name: Configure a SNO cluster
     when: worker_instance_count | int == 0
-    block:
-    - name: Add the service (type LoadBalancer) for SNO
-      kubernetes.core.k8s:
-        template: sno_svc.yaml.j2
-        wait: true
-        wait_timeout: 300
-      vars:
-        svcname: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-
-    - name: Wait for the LoadBalancer value - control plane
-      register: full_svc_control_plane
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Service
-        name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-      until: full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
-      retries: 10
-      delay: 2
-
-    - name: Add A dns record - control plane (Cluster DNS)
-      when: cluster_dns_server is defined
-      ansible.builtin.nsupdate:
-        server: >-
-          {{ cluster_dns_server
-          | ipaddr
-          | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
-          }}
-        zone: "{{ cluster_dns_zone }}"
-        record: "api.{{ cluster_name}}"
-        type: A
-        ttl: 30
-        port: "{{ cluster_dns_port | d('53') }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        key_name: "{{ ddns_key_name }}"
-        key_secret: "{{ ddns_key_secret }}"
-
-    - name: Add A dns record - control plane (Route53)
-      when: route53_aws_zone_id is defined
-      amazon.aws.route53:
-        state: present
-        aws_access_key_id: "{{ route53_aws_access_key_id }}"
-        aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
-        hosted_zone_id: "{{ route53_aws_zone_id }}"
-        record: "api.{{ cluster_name}}.{{ cluster_dns_zone }}"
-        zone: "{{ cluster_dns_zone  }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        type: A
-      register: r_route53_add_record
-      until: r_route53_add_record is success
-      retries: 10
-      delay: 30
-
-    - name: Add A dns record - control plane (Cluster DNS)
-      when: cluster_dns_server is defined
-      ansible.builtin.nsupdate:
-        server: >-
-          {{ cluster_dns_server
-          | ipaddr
-          | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
-          }}
-        zone: "{{ cluster_dns_zone }}"
-        record: "*.apps.{{ cluster_name}}"
-        type: A
-        ttl: 30
-        port: "{{ cluster_dns_port | d('53') }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        key_name: "{{ ddns_key_name }}"
-        key_secret: "{{ ddns_key_secret }}"
-
-    - name: Add A dns record - workers (Route53)
-      when: route53_aws_zone_id is defined
-      amazon.aws.route53:
-        state: present
-        aws_access_key_id: "{{ route53_aws_access_key_id }}"
-        aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
-        hosted_zone_id: "{{ route53_aws_zone_id }}"
-        record: "*.apps.{{ cluster_name}}.{{ cluster_dns_zone }}"
-        zone: "{{ cluster_dns_zone  }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        type: A
-      register: r_route53_add_record
-      until: r_route53_add_record is success
-      retries: 10
-      delay: 30
+    ansible.builtin.include_tasks: configure_sno_cluster.yml
 
   - name: Configure a full cluster
     when: worker_instance_count | int > 0
-    block:
-    - name: Add the service (type LoadBalancer) for Full Clusters - control plane
-      kubernetes.core.k8s:
-        template: control_plane_svc.yaml.j2
-        wait: true
-        wait_timeout: 300
-      vars:
-        svcname: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-
-    - name: Wait for the LoadBalancer value - control plane
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Service
-        name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-      register: full_svc_control_plane
-      until: full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
-      retries: 10
-      delay: 2
-
-    - name: Add A dns record - control plane (Cluster DNS)
-      when: cluster_dns_server is defined
-      ansible.builtin.nsupdate:
-        server: >-
-          {{ cluster_dns_server
-          | ipaddr
-          | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
-          }}
-        zone: "{{ cluster_dns_zone }}"
-        record: "api.{{ cluster_name}}"
-        type: A
-        ttl: 30
-        port: "{{ cluster_dns_port | d('53') }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        key_name: "{{ ddns_key_name }}"
-        key_secret: "{{ ddns_key_secret }}"
-
-    - name: Add A dns record - control plane (Route53)
-      when: route53_aws_zone_id is defined
-      amazon.aws.route53:
-        state: present
-        aws_access_key_id: "{{ route53_aws_access_key_id }}"
-        aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
-        hosted_zone_id: "{{ route53_aws_zone_id }}"
-        record: "api.{{ cluster_name}}.{{ cluster_dns_zone }}"
-        zone: "{{ cluster_dns_zone  }}"
-        value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
-        type: A
-      register: r_route53_add_record
-      until: r_route53_add_record is success
-      retries: 10
-      delay: 30
-
-    - name: Add the service (type LoadBalancer) for Full Clusters - workers
-      kubernetes.core.k8s:
-        template: workers_svc.yaml.j2
-        wait: true
-        wait_timeout: 300
-      vars:
-        svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-
-    - name: Wait for the LoadBalancer value - workers
-      register: full_svc_workers
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Service
-        name: "{{ ai_ocp_vmname_worker_prefix }}-svc"
-        namespace: "{{ ai_ocp_namespace }}"
-      until: full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
-      retries: 10
-      delay: 2
-
-    - name: Add A dns record - workers (Cluster DNS)
-      when: cluster_dns_server is defined
-      ansible.builtin.nsupdate:
-        server: >-
-          {{ cluster_dns_server
-          | ipaddr
-          | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
-          }}
-        zone: "{{ cluster_dns_zone }}"
-        record: "*.apps.{{ cluster_name}}"
-        type: A
-        ttl: 30
-        port: "{{ cluster_dns_port | d('53') }}"
-        value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip }}"
-        key_name: "{{ ddns_key_name }}"
-        key_secret: "{{ ddns_key_secret }}"
-
-    - name: Add A dns record - workers (Route53)
-      when: route53_aws_zone_id is defined
-      amazon.aws.route53:
-        state: present
-        aws_access_key_id: "{{ route53_aws_access_key_id }}"
-        aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
-        hosted_zone_id: "{{ route53_aws_zone_id }}"
-        record: "*.apps.{{ cluster_name}}.{{ cluster_dns_zone }}"
-        zone: "{{ cluster_dns_zone  }}"
-        value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip }}"
-        type: A
-      register: r_route53_add_record
-      until: r_route53_add_record is success
-      retries: 10
-      delay: 30
+    ansible.builtin.include_tasks: configure_full_cluster.yml
 
   - name: Create OVN secondary network
     when: ai_install_use_network is not defined
+    vars:
+      network_name: "{{ cluster_name }}-openshift"
     kubernetes.core.k8s:
       template: net_attach_def.yaml.j2
       wait: true
       wait_timeout: 300
-    vars:
-      network_name: "{{ cluster_name }}-openshift"
-      namespace: "{{ ai_ocp_namespace }}"
 
-  - name: Create Assisted Installer Cluster
+  - name: Create OpenShift cluster using Assisted Installer
     rhpds.assisted_installer.create_cluster:
       name: "{{ cluster_name }}"
       openshift_version: "{{ ai_cluster_version }}"
@@ -309,252 +119,86 @@
       file_name: 98_sysctl-control-plane.yaml
       folder: openshift
 
-  - name: Generate mac addresses for control plane
-    ansible.builtin.set_fact:
-      ai_control_plane_macs: >
-        {{ ai_control_plane_macs + ['f6' |
-            community.general.random_mac(ai_ocp_namespace + cluster_name + 'm1' + _index|string)] }}
-      ai_control_plane_macs2: >
-        {{ ai_control_plane_macs2 + ['f6' |
-            community.general.random_mac(ai_ocp_namespace + cluster_name + 'm2' + _index|string)] }}
-    loop: "{{ range(1,control_plane_instance_count|int+1)|list }}"
-    loop_control:
-      loop_var: _index
+  - name: Setup infrastructure
+    ansible.builtin.include_tasks: setup_infrastructure.yml
 
-  - name: Generate MAC addresses for control plane for attached networks
-    ansible.builtin.set_fact:
-      ai_attach_control_plane_macs: >-
-        {{
-          ai_attach_control_plane_macs | combine({
-            item.1: (ai_attach_control_plane_macs[item.1] | default([])) + [
-              'f6' | community.general.random_mac(
-                ai_ocp_namespace + cluster_name + item.0|string + item.1
-              )
-            ]
-          })
-        }}
-    loop: "{{ range(1, control_plane_instance_count | int + 1) | list | product(ai_attach_control_plane_networks) | list }}"
-    loop_control:
-      loop_var: item
-
-  - name: Generate mac addresses for workers
-    ansible.builtin.set_fact:
-      ai_workers_macs: >
-          {{ ai_workers_macs + ['f6' |
-              community.general.random_mac(ai_ocp_namespace + cluster_name + 'w1' + _index|string)] }}
-      ai_workers_macs2: >
-          {{ ai_workers_macs2 + ['f6' |
-              community.general.random_mac(ai_ocp_namespace + cluster_name + 'w2' + _index|string)] }}
-    loop: "{{ range(1,worker_instance_count|int+1)|list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Generate MAC addresses for workers for attached networks
-    ansible.builtin.set_fact:
-      ai_attach_workers_macs: >-
-        {{
-          ai_attach_workers_macs | combine({
-            item.1: (ai_attach_workers_macs[item.1] | default([])) + [
-              'f6' | community.general.random_mac(
-                ai_ocp_namespace + cluster_name + item.0|string + item.1
-              )
-            ]
-          })
-        }}
-    loop: "{{ range(1, worker_instance_count | int + 1) | list | product(ai_attach_workers_networks) | list }}"
-    loop_control:
-      loop_var: item
-
-  - name: Set static_network_config variable
-    ansible.builtin.set_fact:
-      static_network_config: "{{ lookup('template','static_network_config_full.yaml.j2') | from_yaml }}"
-
-  - name: Create Infrastructure environment
-    rhpds.assisted_installer.create_infra_env:
-      name: "{{ cluster_name }}-infra-env"
-      image_type: "{{ ai_cluster_iso_type }}"
-      cluster_id: "{{ newcluster.result.id }}"
-      openshift_version: "{{ ai_cluster_version }}"
-      ssh_authorized_key: "{{ ai_ssh_authorized_key }}"
-      offline_token: "{{ ai_offline_token }}"
-      pull_secret: "{{ ai_pull_secret }}"
-      static_network_config: "{{ static_network_config }}"
-    register: newinfraenv
-
-  - name: Check if installation ISO DataVolume already exists
-    kubernetes.core.k8s_info:
-      api_version: cdi.kubevirt.io/v1beta1
-      kind: DataVolume
-      name: installation-iso
-      namespace: "{{ ai_ocp_namespace }}"
-    register: r_existing_datavolume
-
-  - name: Delete existing installation ISO DataVolume if it exists
-    when: r_existing_datavolume.resources | length > 0
-    kubernetes.core.k8s:
-      api_version: cdi.kubevirt.io/v1beta1
-      kind: DataVolume
-      name: installation-iso
-      namespace: "{{ ai_ocp_namespace }}"
-      state: absent
-      wait: true
-      wait_timeout: 120
-
-  - name: Create DataVolume for the installation ISO
-    kubernetes.core.k8s:
-      template: installation_iso.yaml.j2
-      wait: true
-      wait_timeout: 300
-    vars:
-      image_url: "{{ newinfraenv.result.download_url }}"
-      namespace: "{{ ai_ocp_namespace }}"
-      pvcname: installation-iso
-
-  - name: Create three control plane VMs for full cluster
-    ansible.builtin.include_tasks: kubevirt/create_control_plane_etcd.yaml
-    vars:
-      pvcinstall: installation-iso
-      vmname: "{{ ai_ocp_vmname_control_plane_prefix }}-{{ _index }}"
-      namespace: "{{ ai_ocp_namespace }}"
-      storageclass: "{{ ai_storage_class }}"
-      network: "{{ cluster_name }}-openshift"
-      network_name: "{{ ai_install_use_network | default(cluster_name + '-openshift') }}"
-      pod_network: "192.168.{{ _index }}.0/24"
-    loop: "{{ range(1,control_plane_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Create {{ worker_instance_count }} worker VMs for full cluster
-    include_tasks: kubevirt/create_workers.yaml
-    vars:
-      pvcinstall: installation-iso
-      vmname: "{{ ai_ocp_vmname_worker_prefix }}-{{ _index }}"
-      namespace: "{{ ai_ocp_namespace }}"
-      storageclass: "{{ ai_storage_class }}"
-      network: "{{ cluster_name}}-openshift"
-      network_name: "{{ ai_install_use_network | default(cluster_name + '-openshift') }}"
-      pod_network: "192.168.1{{ _index }}.0/24"
-    loop: "{{ range(1,worker_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Wait for three control plane VMs to be running
-    ansible.builtin.include_tasks: kubevirt/wait_control_plane_etcd.yaml
-    vars:
-      pvcinstall: installation-iso
-      vmname: "{{ ai_ocp_vmname_control_plane_prefix }}-{{ _index }}"
-      namespace: "{{ ai_ocp_namespace }}"
-      storageclass: "{{ ai_storage_class }}"
-      network: "{{ cluster_name }}-openshift"
-      network_name: "{{ ai_install_use_network | default(cluster_name + '-openshift') }}"
-      pod_network: "192.168.{{ _index }}.0/24"
-    loop: "{{ range(1,control_plane_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Wait for {{ worker_instance_count }} worker VMs to be running
-    ansible.builtin.include_tasks: kubevirt/wait_workers.yaml
-    vars:
-      pvcinstall: installation-iso
-      vmname: "{{ ai_ocp_vmname_worker_prefix }}-{{ _index }}"
-      namespace: "{{ ai_ocp_namespace }}"
-      storageclass: "{{ ai_storage_class }}"
-      network: "{{ cluster_name}}-openshift"
-      network_name: "{{ ai_install_use_network | default(cluster_name + '-openshift') }}"
-      pod_network: "192.168.1{{ _index }}.0/24"
-    loop: "{{ range(1,worker_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  # Don't change role - AI collection won't find the node if the role is not master
-  - name: Set the variable ai_configure_hosts for control-plane
-    ansible.builtin.set_fact:
-      ai_configure_hosts: >-
-        {{ ai_configure_hosts + [
-          {'hostname': ai_ocp_vmname_control_plane_prefix + "-" + _index|string,
-        'role': 'master',
-        'installation_disk': '/dev/vda'}] }}
-    loop: "{{ range(1,control_plane_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Set the variable ai_configure_hosts for workers
-    ansible.builtin.set_fact:
-      ai_configure_hosts: >-
-        {{ ai_configure_hosts + [
-        {'hostname': ai_ocp_vmname_worker_prefix + "-" + _index|string,
-        'role': 'worker',
-        'installation_disk': '/dev/vda'}] }}
-    loop: "{{ range(1,worker_instance_count | int+1) | list }}"
-    loop_control:
-      loop_var: _index
-
-  - name: Wait for the hosts to be ready
-    rhpds.assisted_installer.wait_for_hosts:
-      cluster_id: "{{ newcluster.result.id }}"
-      offline_token: "{{ ai_offline_token }}"
-      expected_hosts: "{{ control_plane_instance_count | int + worker_instance_count | int }}"
-      infra_env_id: "{{ newinfraenv.result.id }}"
-      configure_hosts: "{{ ai_configure_hosts }}"
-      wait_timeout: 600
-
-  - name: Start cluster installation
+  - name: Run installation on the bastion
     delegate_to: "{{ groups['bastions'][0] }}"
-    run_once: true
-    rhpds.assisted_installer.install_cluster:
-      cluster_id: "{{ newcluster.result.id }}"
-      offline_token: "{{ ai_offline_token }}"
-      wait_timeout: 5400
-    async: 5400
-    poll: 60
-    register: cluster_install_job
+    block:
+    - name: Make sure Python 3.11 is installed on the bastion
+      become: true
+      ansible.builtin.package:
+        name:
+        - python3.11
+        - python3.11-pip
+        - python3.11-devel
+        state: present
 
-  - name: Check cluster installation status
-    delegate_to: "{{ groups['bastions'][0] }}"
-    run_once: true
-    ansible.builtin.async_status:
-      jid: "{{ cluster_install_job.ansible_job_id }}"
-    register: cluster_install_result
-    until: cluster_install_result.finished
-    retries: 90
-    delay: 60
-    when: cluster_install_job.ansible_job_id is defined
+    - name: Start cluster installation
+      rhpds.assisted_installer.install_cluster:
+        cluster_id: "{{ newcluster.result.id }}"
+        offline_token: "{{ ai_offline_token }}"
+        wait_timeout: 5400
+      async: 5400
+      poll: 60
+      register: cluster_install_job
 
-  - name: Obtain OpenShift cluster credentials
-    delegate_to: "{{ groups['bastions'][0] }}"
-    run_once: true
-    rhpds.assisted_installer.get_credentials:
-      cluster_id: "{{ newcluster.result.id }}"
-      offline_token: "{{ ai_offline_token }}"
-    register: ai_credentials
+    - name: Display cluster_install_job for debugging purpose
+      ansible.builtin.debug:
+        var: cluster_install_job
+        verbosity: 2
 
-  - name: Display credentials for debugging purpose
-    ansible.builtin.debug:
-      var: ai_credentials.result
+    - name: Wait for cluster installation to be completed
+      when: 
+      - not cluster_install_job.finished | default(false) | bool
+      - not cluster_install_job.result.status | default('') | lower() == 'installed'
+      - cluster_install_job.ansible_job_id is defined
+      ansible.builtin.async_status:
+        jid: "{{ cluster_install_job.ansible_job_id }}"
+      register: cluster_install_result
+      until: cluster_install_result.finished
+      retries: 90
+      delay: 60
 
-  - name: Create directory for downloaded credential files
-    ansible.builtin.file:
-      state: directory
-      path: "{{ ai_ocp_output_dir }}/{{ cluster_name }}/auth"
-      recurse: true
+    - name: Get OpenShift cluster credentials
+      rhpds.assisted_installer.get_credentials:
+        cluster_id: "{{ newcluster.result.id }}"
+        offline_token: "{{ ai_offline_token }}"
+      register: ai_credentials
+
+    - name: Display credentials for debugging purpose
+      ansible.builtin.debug:
+        var: ai_credentials.result
+
+    - name: Save credentials in variables
+      ansible.builtin.set_fact:
+        openshift_console_url: "{{ ai_credentials.result.console_url }}"
+        openshift_kubeadmin_password: "{{ ai_credentials.result.password }}"
 
   - name: Downloads OpenShift cluster credentials
     rhpds.assisted_installer.download_credentials:
       cluster_id: "{{ newcluster.result.id }}"
       offline_token: "{{ ai_offline_token }}"
       file_name: "{{ item }}"
-      dest: "{{ ai_ocp_output_dir }}/{{ cluster_name }}/auth/{{ item }}"
+      dest: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_{{ item }}"
     loop:
     - kubeadmin-password
     - kubeconfig
     - kubeconfig-noingress
+
+  - name: Make directory to store cluster files
+    ansible.builtin.file:
+      state: directory
+      path: "{{ hostvars.localhost.output_dir }}/cluster_files"
+      mode: ug=rwx,o=rx
+      recurse: true
 
   - name: Downloads OpenShift cluster files
     rhpds.assisted_installer.download_files:
       cluster_id: "{{ newcluster.result.id }}"
       offline_token: "{{ ai_offline_token }}"
       file_name: "{{ item }}"
-      dest: "{{ ai_ocp_output_dir }}/{{ cluster_name }}/{{ item }}"
+      dest: "{{ hostvars.localhost.output_dir }}/cluster_files/{{ item }}"
     loop:
     - bootstrap.ign
     - master.ign
@@ -564,81 +208,96 @@
     - custom_manifests.json
     - custom_manifests.yaml
 
-  - name: Fetch kube config
-    ansible.builtin.fetch:
-      flat: true
-      src: /home/{{ ansible_user }}/{{ cluster_name }}/auth/{{ item }}
-      dest: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_{{ item }}"
-    loop:
+  - name: Set up bastion
+    delegate_to: "{{ groups['bastions'][0] }}"
+    become: true
+    block:
+    - name: Create directory for downloaded credential files
+      ansible.builtin.file:
+        state: directory
+        path: "~{{ ansible_user }}/{{ cluster_name }}/auth"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: ug=rwx,o=rx
+        recurse: true
+
+    - name: Copy kube config and kubeadmin password to bastion
+      ansible.builtin.copy:
+        src: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_{{ item }}"
+        dest: "~{{ ansible_user }}/{{ cluster_name }}/auth/{{ item }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: u=rw,go=
+      loop:
       - kubeconfig
       - kubeadmin-password
 
-  - name: Make sure .kube directory exists for {{ ansible_user }}
-    ansible.builtin.file:
-      state: directory
-      path: /home/{{ ansible_user }}/.kube
-      owner: "{{ ansible_user }}"
-      group: "{{ ansible_user }}"
-      mode: u=rwx,go=
+    - name: Make sure .kube directory exists for {{ ansible_user }}
+      ansible.builtin.file:
+        state: directory
+        path: "~{{ ansible_user }}/.kube"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: u=rwx,go=
 
-  - name: Make sure .kube directory exists for root
-    become: true
-    ansible.builtin.file:
-      state: directory
-      path: /root/.kube
-      owner: root
-      group: root
-      mode: u=rwx,go=
+    - name: Make sure .kube directory exists for root
+      ansible.builtin.file:
+        state: directory
+        path: /root/.kube
+        owner: root
+        group: root
+        mode: u=rwx,go=
 
-  - name: Copy cluster kubeconfig to /home/{{ ansible_user }}/.kube/config
-    ansible.builtin.copy:
-      remote_src: true
-      src: "/home/{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig"
-      dest: "/home/{{ ansible_user }}/.kube/config"
-      owner: "{{ ansible_user }}"
-      group: "{{ ansible_user }}"
-      mode: u=rw,go=
+    - name: Copy cluster kubeconfig to ~{{ ansible_user }}/.kube/config
+      ansible.builtin.copy:
+        remote_src: true
+        src: "~{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig"
+        dest: "~{{ ansible_user }}/.kube/config"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: u=rw,go=
 
-  - name: Copy cluster kubeconfig to /root/.kube/config
-    become: true
-    ansible.builtin.copy:
-      remote_src: true
-      src: /home/{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig
-      dest: /root/.kube/config
-      owner: root
-      group: root
-      mode: u=rw,go=
+    - name: Copy cluster kubeconfig to /root/.kube/config
+      ansible.builtin.copy:
+        remote_src: true
+        src: "~{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig"
+        dest: /root/.kube/config
+        owner: root
+        group: root
+        mode: u=rw,go=
 
-  - name: Set up Student User
-    when: install_student_user | bool
-    block:
-      - name: Make sure .kube directory exists in /home/{{ student_name }}
-        become: true
+    - name: Set up student user
+      when: bastion_setup_student_user | bool
+      block:
+      - name: Make sure .kube directory exists in ~{{ bastion_student_user_name }}
         ansible.builtin.file:
           state: directory
-          path: "/home/{{ student_name }}/.kube"
-          owner: "{{ student_name }}"
+          path: "~{{ bastion_student_user_name }}/.kube"
+          owner: "{{ bastion_student_user_name }}"
           group: users
           mode: u=rwx,go=
 
-      - name: Copy /home/{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig to /home/{{ student_name }}/.kube
-        become: true
+      - name: Set up kubeconfig for student user
         ansible.builtin.copy:
-          src: /home/{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig
-          dest: /home/{{ student_name }}/.kube/config
+          src: "~{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig"
+          dest: "~{{ bastion_student_user_name }}/.kube/config"
           remote_src: true
-          owner: "{{ student_name }}"
+          owner: "{{ bastion_student_user_name }}"
           group: users
-          mode: 0600
+          mode: u=rw,go=
 
-  - name: Create OpenShift Bash completion file
-    become: true
-    ansible.builtin.shell: oc completion bash >/etc/bash_completion.d/openshift
+      - name: Create OpenShift Bash completion file
+        ansible.builtin.shell: oc completion bash >/etc/bash_completion.d/openshift
+
+- name: Gather and Print cluster info
+  ansible.builtin.import_tasks: print_cluster_info.yml
 
 - name: Find installer Pods in error status with label app=installer
-  environment:
-    KUBECONFIG: /home/{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig    
+  # environment:
+  #   KUBECONFIG: ~{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig
   kubernetes.core.k8s_info:
+    kubeconfig: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_kubeconfig"
+    api_version: v1
     kind: Pod
     label_selectors:
     - app=installer
@@ -651,6 +310,7 @@
 
 - name: Delete error pods
   kubernetes.core.k8s:
+    kubeconfig: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_kubeconfig"
     definition:
       apiVersion: v1
       kind: Pod
@@ -661,6 +321,3 @@
   loop: "{{ r_pod_info.resources }}"
   loop_control:
     loop_var: pod
-    
-- name: Gather and Print cluster info
-  ansible.builtin.import_tasks: print_cluster_info.yml

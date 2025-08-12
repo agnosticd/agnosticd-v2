@@ -5,9 +5,9 @@
       - masquerade: {}
         model: virtio
         name: default
-        macAddress: "{{ ai_workers_macs[_index|int-1] }}"
+        macAddress: "{{ ai_workers_macs[_index | int-1] }}"
       - name: "{{ network }}"
-        macAddress: "{{ ai_workers_macs2[_index|int-1] }}"
+        macAddress: "{{ ai_workers_macs2[_index | int-1] }}"
         bridge: {}
     _instance_networks:
       - name: default
@@ -86,7 +86,7 @@
     api_key: "{{ k8s_auth_results.k8s_auth.api_key|default(sandbox_openshift_api_key) }}"
     validate_certs: false
     name: "{{ vmname }}"
-    namespace: "{{ namespace }}"
+    namespace: "{{ ai_ocp_namespace }}"
     data_volume_templates: "{{ _datavolume + (ai_workers_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
     running: true
     wait: false
@@ -103,8 +103,8 @@
         spec:
           source:
             pvc:
-              name: "{{ pvcinstall }}"
-              namespace: "{{ namespace }}"
+              name: installation-iso
+              namespace: "{{ ai_ocp_namespace }}"
           storage:
             resources:
               requests:
@@ -119,7 +119,7 @@
             resources:
               requests:
                 storage: 100Gi
-            storageClassName: "{{ storageclass }}"
+            storageClassName: "{{ ai_storage_class }}"
     _spec: |
       domain:
         cpu:

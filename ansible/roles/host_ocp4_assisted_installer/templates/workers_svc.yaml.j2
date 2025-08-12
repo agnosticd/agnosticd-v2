@@ -5,7 +5,7 @@ metadata:
   annotations:
     metallb.universe.tf/allow-shared-ip: svc-{{ guid }}
   name: {{ svcname }}
-  namespace: {{ namespace }}
+  namespace: {{ ai_ocp_namespace }}
 spec:
   ports:
   - name: https

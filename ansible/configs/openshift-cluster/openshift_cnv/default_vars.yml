@@ -11,9 +11,6 @@ cloud_provider: openshift_cnv
 ansible_user: cloud-user
 remote_user: cloud-user
 
-# Use Dynamic DNS. Always true
-use_dynamic_dns: true
-
 # Whether to wait for an ack from the DNS servers before continuing
 wait_for_dns: true
 

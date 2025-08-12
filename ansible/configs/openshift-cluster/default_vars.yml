@@ -22,7 +22,7 @@ project_tag: "{{ config }}-{{ guid }}"
 
 # Base Domain to be used for the environment
 # Should ideally be set by a Sandbox and passed to the config
-base_domain: redhatworkshops.io
+base_domain: dynamic.redhatworkshops.io
 
 # ===================================================================
 # Additional Collections & roles to be installed for this config

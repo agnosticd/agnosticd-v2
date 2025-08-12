@@ -1,0 +1,49 @@
+---
+- name: Add the service (type LoadBalancer) for SNO
+  vars:
+    svcname: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
+  kubernetes.core.k8s:
+    template: sno_svc.yaml.j2
+    wait: true
+    wait_timeout: 300
+
+- name: Wait for the LoadBalancer value - control plane
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Service
+    name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
+    namespace: "{{ ai_ocp_namespace }}"
+  register: full_svc_control_plane
+  until: full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
+  retries: 10
+  delay: 2
+
+- name: Add A DNS record - api (Route53)
+  amazon.aws.route53:
+    state: present
+    aws_access_key_id: "{{ route53_aws_access_key_id }}"
+    aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
+    hosted_zone_id: "{{ route53_aws_zone_id }}"
+    record: "api.{{ cluster_name}}.{{ cluster_dns_zone }}"
+    zone: "{{ cluster_dns_zone  }}"
+    value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    type: A
+  register: r_route53_add_record
+  until: r_route53_add_record is success
+  retries: 10
+  delay: 30
+
+- name: Add A DNS record - apps (Route53)
+  amazon.aws.route53:
+    state: present
+    aws_access_key_id: "{{ route53_aws_access_key_id }}"
+    aws_secret_access_key: "{{ route53_aws_secret_access_key }}"
+    hosted_zone_id: "{{ route53_aws_zone_id }}"
+    record: "*.apps.{{ cluster_name}}.{{ cluster_dns_zone }}"
+    zone: "{{ cluster_dns_zone  }}"
+    value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    type: A
+  register: r_route53_add_record
+  until: r_route53_add_record is success
+  retries: 10
+  delay: 30

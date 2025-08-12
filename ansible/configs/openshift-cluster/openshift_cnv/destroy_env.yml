@@ -3,16 +3,6 @@
   hosts: localhost
   gather_facts: false
   tasks:
-  - name: Run host_ocp4_assisted_destroy role
-    when: host_ocp4_deploy_installation_method == "openshift_assisted"
-    ansible.builtin.include_role:
-      name: host_ocp4_assisted_destroy
-
-  - name: Run host_ocp4_hcp_cnv_destroy role
-    when: host_ocp4_deploy_installation_method == "openshift_hcp_cnv"
-    ansible.builtin.include_role:
-      name: host_ocp4_hcp_cnv_destroy
-
   - name: Remove workloads
     when: remove_workloads | default([]) | length > 0
     block:
@@ -24,6 +14,16 @@
       loop: "{{ remove_workloads }}"
       loop_control:
         loop_var: workload_loop_var
+
+  - name: Run host_ocp4_assisted_destroy role
+    when: host_ocp4_deploy_installation_method == "openshift_assisted"
+    ansible.builtin.include_role:
+      name: host_ocp4_assisted_destroy
+
+  - name: Run host_ocp4_hcp_cnv_destroy role
+    when: host_ocp4_deploy_installation_method == "openshift_hcp_cnv"
+    ansible.builtin.include_role:
+      name: host_ocp4_hcp_cnv_destroy
 
 - name: Import default cloud provider destroy playbook
   ansible.builtin.import_playbook: "../../../cloud_providers/openshift_cnv/destroy_env.yml"

@@ -25,6 +25,7 @@
 - name: Debug ssh pub key
   ansible.builtin.debug:
     msg: "{{ bastion_ssh_pubkey_content }}"
+    verbosity: 2
 
 - name: Add bastion access to all hosts
   when:
@@ -40,10 +41,11 @@
     loop_var: l_inventory_name
   delegate_to: "{{ l_inventory_name }}"
 
-- name: Add bastion access to all hosts
+- name: Add bastion root access to all hosts
   when:
   - l_inventory_name not in groups.windows | default([])
   - l_inventory_name not in groups.network | default([])
+  become: true
   ansible.posix.authorized_key:
     user: root
     state: present
@@ -53,4 +55,3 @@
   loop_control:
     loop_var: l_inventory_name
   delegate_to: "{{ l_inventory_name }}"
-  become: true

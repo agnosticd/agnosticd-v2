@@ -89,7 +89,19 @@ class ActionModule(ActionBase):
 
         try:
             action = self._templar.template('{{ ACTION | default(hostvars.localhost.ACTION) | default("provision") }}')
-            output_dir = self._templar.template('{{ output_dir | default(hostvars.localhost.output_dir) | default(playbook_dir) | default(".") }}')
+            # If templating failed and returned the literal template string, fall back to "provision"
+            if '{{' in action and '}}' in action:
+                action = "provision"
+            
+            # Handle output_dir with better fallback logic
+            try:
+                output_dir = self._templar.template('{{ output_dir | default(hostvars.localhost.output_dir) | default(playbook_dir) | default(".") }}')
+                # If templating failed and returned the literal template string, fall back to current directory
+                if '{{' in output_dir and '}}' in output_dir:
+                    output_dir = "."
+            except Exception:
+                output_dir = "."
+            
             # Attempt to make output_dir if not exists
             try:
                 os.makedirs(output_dir)

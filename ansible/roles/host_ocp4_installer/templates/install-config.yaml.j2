@@ -113,7 +113,7 @@ platform:
     password: "{{ vcenter_password }}"
     username: "{{ vcenter_username }}"
     vCenter: "{{ vcenter_hostname }}"
-    folder: "/{{ vcenter_datacenter}}/vm/Workloads/{{ env_type }}-{{ guid }}/"
+    folder: "/{{ vcenter_datacenter}}/vm/Workloads/{{ config }}-{{ guid }}/"
 
 {% endif %}
 {# ocp4_pull_secret may be either a dict (mapping) or a JSON string.       #}

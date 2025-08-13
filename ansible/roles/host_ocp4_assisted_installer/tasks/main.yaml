@@ -137,20 +137,11 @@
   - name: Run installation on the bastion
     delegate_to: "{{ groups['bastions'][0] }}"
     block:
-    - name: Get facts
-      ansible.builtin.setup:
-
-    - name: Make sure Python 3.11 is installed on the bastion for RHEL 9
-      when: ansible_distribution_major_version == '9'
-      become: true
-      ansible.builtin.package:
-        name:
-        - python3.11
-        - python3.11-pip
-        - python3.11-devel
-        state: present
-
+    # Need to specify python interpreter for the async task - otherwise it will try to use the same version
+    # as the one in the Execution Environment - which may or may not exist on the bastion.
     - name: Start cluster installation
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
       rhpds.assisted_installer.install_cluster:
         cluster_id: "{{ newcluster.result.id }}"
         offline_token: "{{ ai_offline_token }}"
@@ -308,9 +299,7 @@
 - name: Gather and Print cluster info
   ansible.builtin.import_tasks: print_cluster_info.yml
 
-- name: Find installer Pods in error status with label app=installer
-  # environment:
-  #   KUBECONFIG: ~{{ ansible_user }}/{{ cluster_name }}/auth/kubeconfig
+- name: Find installer Pods with label app=installer in error status
   kubernetes.core.k8s_info:
     kubeconfig: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_kubeconfig"
     api_version: v1

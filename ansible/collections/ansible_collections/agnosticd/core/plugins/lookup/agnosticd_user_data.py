@@ -50,15 +50,7 @@ class LookupModule(LookupBase):
         self.set_options(direct=kwargs)
         ret = []
 
-        # Handle output_dir with better fallback logic
-        try:
-            output_dir = self._templar.template('{{ output_dir | default(playbook_dir) | default(".") }}')
-            # If templating failed and returned the literal template string, fall back to current directory
-            if '{{' in output_dir and '}}' in output_dir:
-                output_dir = "."
-        except Exception:
-            output_dir = "."
-        
+        output_dir = self._templar.template('{{ output_dir | default(playbook_dir) | default(".") }}')
         user_data = {}
         try:
             fh = open(os.path.join(output_dir, f'{action}-user-data.yaml'), 'r')

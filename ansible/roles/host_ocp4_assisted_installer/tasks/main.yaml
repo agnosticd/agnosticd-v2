@@ -27,6 +27,7 @@
     mode: ug=rwx,o=rx
     owner: root
     group: root
+    creates: /usr/bin/oc
   register: r_client
   until: r_client is success
   retries: 10

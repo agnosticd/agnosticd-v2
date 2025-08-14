@@ -66,6 +66,8 @@ host_ocp4_installer_version: "4.19"
 # no authentication is set up for the cluster
 host_ocp4_installer_set_user_data_kubeadmin_password: true
 
+openshift_cluster_admin_service_account_enable: true
+
 # ===================================================================
 # List of workloads to be deployed
 # ===================================================================

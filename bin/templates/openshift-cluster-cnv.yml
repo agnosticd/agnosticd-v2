@@ -74,16 +74,24 @@ host_ocp4_deploy_installation_method: openshift_assisted
 # no authentication is set up for the cluster
 host_ocp4_installer_set_user_data_kubeadmin_password: true
 
+openshift_cluster_admin_service_account_enable: true
+
 # ===================================================================
 # List of workloads to be deployed
 # ===================================================================
 workloads:
+- agnosticd.core_workloads.ocp4_workload_external_odf
 - agnosticd.core_workloads.ocp4_workload_cert_manager
 - agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
 
 # ===================================================================
 # Variables for specific workloads
 # ===================================================================
+
+# -------------------------------------------------------------------
+# Workload: ocp4_workload_external_odf
+# -------------------------------------------------------------------
+ocp4_workload_external_odf_channel: stable-4.18
 
 # -------------------------------------------------------------------
 # Workload: ocp4_workload_cert_manager

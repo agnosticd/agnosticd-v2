@@ -401,9 +401,6 @@ def test_agnosticd_filter_out_installed_collections():
                 "community.general": {
                     "version": "6.3.0"
                 },
-                    "community.aws": {
-                        "version": "5.2.0"
-                    },
                     "ansible.utils": {
                         "version": "2.9.0"
                     },

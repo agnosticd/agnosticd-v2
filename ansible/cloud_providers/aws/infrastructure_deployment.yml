@@ -19,7 +19,7 @@
 
   - name: Run infra_images
     ansible.builtin.include_role:
-      name: infra_images
+      name: agnosticd.cloud_provider_aws.infra_images
 
   - name: Run aws_capacity_reservation
     vars:
@@ -36,7 +36,7 @@
 
     - name: Run infra-images again to use the proper region selected by the reservations
       ansible.builtin.include_role:
-        name: infra_images
+        name: agnosticd.cloud_provider_aws.infra_images
 
   - name: Run aws_open_environment role
     when: agnosticd_open_environment | default(false) | bool

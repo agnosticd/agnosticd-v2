@@ -5,11 +5,11 @@
   gather_facts: false
   become: false
   tasks:
-  - name: Run aws_capacity_reservation
+  - name: Run capacity_reservation
     vars:
       ACTION: destroy
     ansible.builtin.include_role:
-      name: agnosticd.cloud_provider_aws.aws_capacity_reservation
+      name: agnosticd.cloud_provider_aws.capacity_reservation
 
   - name: Set facts for ssh provision SSH key
     when: ssh_provision_key_name is undefined
@@ -20,15 +20,15 @@
     vars:
       ACTION: destroy
     ansible.builtin.include_role:
-      name: agnosticd.cloud_provider_aws.aws_ssh_key
+      name: agnosticd.cloud_provider_aws.ssh_key
 
-  - name: Run aws_open_environment Role
+  - name: Run open_environment role
     when: agnosticd_open_environment | default(false) | bool
     vars:
       ACTION: destroy
     ansible.builtin.include_role:
-      name: agnosticd.cloud_provider_aws.aws_open_environment
+      name: agnosticd.cloud_provider_aws.open_environment
 
-  - name: Run aws_template_destroy
+  - name: Run template_destroy
     ansible.builtin.include_role:
-      name: agnosticd.cloud_provider_aws.aws_template_destroy
+      name: agnosticd.cloud_provider_aws.template_destroy

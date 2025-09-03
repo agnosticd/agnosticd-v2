@@ -52,4 +52,4 @@
 
   - name: "Include lifecycle tasks for {{ cloud_provider }}"
     ansible.builtin.include_role:
-      name: "agnosticd.cloud_provider_{{ cloud_provider }}.{{ cloud_provider }}_lifecycle"
+      name: "agnosticd.cloud_provider_{{ cloud_provider }}.lifecycle"

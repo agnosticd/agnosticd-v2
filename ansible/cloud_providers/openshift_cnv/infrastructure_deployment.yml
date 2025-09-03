@@ -28,18 +28,18 @@
   gather_facts: false
   become: false
   tasks:
-  - name: Run infra-dns Role
+  - name: Run infra-dns role
     when: cluster_dns_server is defined or route53_aws_zone_id is defined
     vars:
       _dns_state: present
     ansible.builtin.include_role:
       name: infra_dns
 
-  - name: Run create_inventory Role
+  - name: Run create_inventory role
     ansible.builtin.import_role:
       name: agnosticd.cloud_provider_openshift_cnv.create_inventory
 
-  - name: Run Common SSH Config Generator Role
+  - name: Run common SSH config generator role
     when: instances | default(false) and 'bastions' in groups
     ansible.builtin.import_role:
       name: infra_common_ssh_config_generate
@@ -47,7 +47,7 @@
 # include global vars again, this time for all hosts now that the inventory is built
 - ansible.builtin.import_playbook: ../../include_vars.yml
 
-- name: Step 001.3 Configure Linux Hosts and Wait for Connection
+- name: Step 001.3 Configure Linux hosts and wait for connection
   hosts:
   - all:!windows:!network
   gather_facts: false

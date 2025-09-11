@@ -1,17 +1,4 @@
 ---
-# Quickly setup output dir and include vars.
-# Do not run the full setup_runtime.yml playbook because
-# it installs galaxy dependencies and that is too slow for
-# lifecycle actions.
-#
-# Output dir:
-- name: Setup output dir
-  ansible.builtin.import_playbook: setup_output_dir.yml
-
-# include global vars from the config
-- name: Include global variables
-  ansible.builtin.import_playbook: include_vars.yml
-
 # This file is the default playbook for lifecycle actions.
 # You should implement those actions in your cloud provider collection if you
 # need a specific process.

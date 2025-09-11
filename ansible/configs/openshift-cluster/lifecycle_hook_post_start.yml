@@ -48,7 +48,7 @@
         -F {{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_ssh_conf
 
 - name: Run recover cluster actions
-  hosts: localhost
+  hosts: bastions
   run_once: true
   become: false
   gather_facts: false
@@ -64,5 +64,6 @@
 
     - name: Approve CertificateSigningRequests
       when: r_wait is successful
+      delegate_to: localhost
       ansible.builtin.include_role:
         name: ocp4_approve_certificate_signing_requests

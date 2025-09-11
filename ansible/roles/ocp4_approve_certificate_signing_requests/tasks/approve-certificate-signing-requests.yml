@@ -4,7 +4,6 @@
     group/k8s:
       kubeconfig: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_kubeconfig"
       validate_certs: false
-  delegate_to: localhost
   block:
   - name: Get Nodes in order to check status
     kubernetes.core.k8s_info:
@@ -48,8 +47,10 @@
       when: __nodes_not_ready | length > 0
 
     - name: Approve all pending CertificateSigningRequests
-      loop: "{{ __unsigned_csr_names | default([]) }}"
+      environment:
+        KUBECONFIG: "{{ hostvars.localhost.output_dir }}/{{ config }}_{{ guid }}_kubeconfig"
       ansible.builtin.command: "oc adm certificate approve {{ item }}"
+      loop: "{{ __unsigned_csr_names | default([]) }}"
       ignore_errors: true
 
     - name: Wait and recheck for more CertificateSigningRequests

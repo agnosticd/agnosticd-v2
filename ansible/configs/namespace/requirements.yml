@@ -1,8 +1,0 @@
----
-roles:
-- name: namespaced_ocp_workload_example
-  src: https://github.com/rhpds/namespaced_ocp_workload_example.git
-  version: main
-collections:
-- name: kubernetes.core
-  version: 5.0.0

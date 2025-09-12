@@ -4,5 +4,6 @@
   gather_facts: false
   become: false
   tasks:
-    - debug:
-        msg: "Step 000 Pre Infrastructure - No infrastructure needed for namespace-only deployment"
+  - name: Print message
+    ansible.builtin.debug:
+      msg: "Step 000 Pre Infrastructure - No infrastructure needed for namespace-only deployment"

@@ -4,5 +4,6 @@
   gather_facts: false
   become: false
   tasks:
-    - debug:
-        msg: "Step 003 Pre Software - No infrastructure software needed"
+  - name: Print message
+    ansible.builtin.debug:
+      msg: "Step 003 Pre Software - No infrastructure software needed"

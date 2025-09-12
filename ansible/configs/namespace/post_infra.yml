@@ -4,5 +4,6 @@
   gather_facts: false
   become: false
   tasks:
-    - debug:
-        msg: "Step 002 Post Infrastructure - No infrastructure setup needed for namespace config"
+  - name: Print message
+    ansible.builtin.debug:
+      msg: "Step 002 Post Infrastructure - No infrastructure setup needed for namespace config"

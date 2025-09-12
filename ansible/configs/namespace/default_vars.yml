@@ -4,4 +4,4 @@
 # requiring infrastructure
 
 # List of namespace workloads to deploy
-ocp_workloads_namespaced: []
+workloads: []

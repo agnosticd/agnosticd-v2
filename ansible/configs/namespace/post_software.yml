@@ -4,5 +4,6 @@
   gather_facts: false
   become: false
   tasks:
-    - debug:
-        msg: "Step 005 Post Software - Namespace workloads deployment completed"
+  - name: Print message
+    ansible.builtin.debug:
+      msg: "Step 005 Post Software - Namespace workloads deployment completed"

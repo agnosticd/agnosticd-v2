@@ -1,5 +1,0 @@
----
-roles:
-- name: namespaced_ocp_workload_example
-  src: https://github.com/rhpds/namespaced_ocp_workload_example.git
-  version: main

@@ -13,7 +13,7 @@
   gather_facts: false
   become: false
   tasks:
-  - name: Apply namespaced workload "{{ workload_loop_var }}"
+  - name: Apply namespaced workload "{{ workload_loop_var | default('None') }}"
     when: workloads | default([]) | length > 0
     ansible.builtin.include_role:
       name: "{{ workload_loop_var }}"

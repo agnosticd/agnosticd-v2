@@ -15,19 +15,10 @@
   tasks:
   - name: Apply namespaced workload "{{ workload_loop_var | default('None') }}"
     when: workloads | default([]) | length > 0
-    ansible.builtin.include_role:
-      name: "{{ workload_loop_var }}"
     vars:
       ACTION: "{{ ACTION | default('provision') }}"
-      # Pass through OpenShift connection variables
-      sandbox_openshift_cluster: "{{ sandbox_openshift_cluster | default('') }}"
-      sandbox_openshift_api_url: "{{ sandbox_openshift_api_url | default('') }}"
-      sandbox_openshift_apps_domain: "{{ sandbox_openshift_apps_domain | default('') }}"
-      sandbox_openshift_namespace: "{{ sandbox_openshift_namespace | default('') }}"
-      sandbox_openshift_api_token: "{{ sandbox_openshift_api_token | default('') }}"
-      sandbox_openshift_credentials: "{{ sandbox_openshift_credentials | default([]) }}"
-      sandbox_openshift_user: "{{ sandbox_openshift_user | default('') }}"
-      sandbox_openshift_password: "{{ sandbox_openshift_password | default('') }}"
+    ansible.builtin.include_role:
+      name: "{{ workload_loop_var }}"
     loop: "{{ workloads }}"
     loop_control:
       loop_var: workload_loop_var

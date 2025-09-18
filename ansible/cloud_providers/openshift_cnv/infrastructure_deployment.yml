@@ -12,7 +12,7 @@
   - name: Provide sandbox provision data
     when:
       - openshift_cnv_set_sandbox_provision_data | default(false) | bool
-    agnosticd.core.agnosticd_user_data:
+    agnosticd.core.agnosticd_user_info:
       data:
         sandbox_openshift_namespace: "{{ sandbox_openshift_namespace }}"
         sandbox_openshift_cluster: "{{ sandbox_openshift_cluster }}"

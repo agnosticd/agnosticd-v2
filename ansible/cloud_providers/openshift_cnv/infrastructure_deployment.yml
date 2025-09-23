@@ -9,6 +9,18 @@
       host: "{{ sandbox_openshift_api_url }}"
       validate_certs: false
   tasks:
+  - name: Provide sandbox provision data
+    when:
+      - openshift_cnv_set_sandbox_provision_data | default(false) | bool
+    agnosticd.core.agnosticd_user_info:
+      data:
+        sandbox_openshift_namespace: "{{ sandbox_openshift_namespace }}"
+        sandbox_openshift_cluster: "{{ sandbox_openshift_cluster }}"
+        sandbox_openshift_api_url: "{{ sandbox_openshift_api_url }}"
+        sandbox_openshift_apps_domain: "{{ sandbox_openshift_apps_domain }}"
+        sandbox_openshift_console_url: "{{ sandbox_openshift_console_url }}"
+        sandbox_openshift_api_key: "{{ sandbox_openshift_api_key}}"
+
   - name: Create ssh provision key
     when:
     - instances | default([]) | length > 0

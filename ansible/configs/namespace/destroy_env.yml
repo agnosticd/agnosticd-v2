@@ -1,13 +1,13 @@
 ---
-- name: Destroy Namespaced OCP Workloads
+- name: Destroy namespaced OpenShift workloads
   hosts: localhost
   gather_facts: false
   become: false
   tasks:
-  - name: Destroy namespaced workloads in reverse order
+  - name: Remove namespaced workload in reverse order
     when: workloads | default([]) | length > 0
     block:
-    - name: Remove namespaced workload "{{ workload_loop_var }}"
+    - name: Remove namespaced workload "{{ workload_loop_var | default('None') }}"
       ansible.builtin.include_role:
         name: "{{ workload_loop_var }}"
       vars:

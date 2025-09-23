@@ -17,5 +17,5 @@ spec:
     protocol: TCP
     targetPort: 80
   selector:
-    role: worker
+    role: {{ role | default('worker') }}
   type: LoadBalancer

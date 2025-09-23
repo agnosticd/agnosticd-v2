@@ -48,9 +48,9 @@
       api_key: "{{ k8s_auth_results.k8s_auth.api_key | default(sandbox_openshift_api_key) }}"
       validate_certs: false
   block:
-  - name: Configure a SNO cluster
+  - name: Configure a SNO/Compact cluster
     when: worker_instance_count | int == 0
-    ansible.builtin.include_tasks: configure_sno_cluster.yml
+    ansible.builtin.include_tasks: configure_sno_compact_cluster.yml
 
   - name: Configure a full cluster
     when: worker_instance_count | int > 0

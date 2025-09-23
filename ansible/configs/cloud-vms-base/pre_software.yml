@@ -1,0 +1,18 @@
+---
+- name: Step 003 - Pre Software
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Print debug message
+    ansible.builtin.debug:
+      msg: "Step 003 Pre Software"
+
+# ----------------------------------------------------------------------
+# Pre-software Workloads as role
+# ----------------------------------------------------------------------
+- name: Import pre-software workloads
+  ansible.builtin.import_playbook: workloads.yml
+  vars:
+     _workload_title_: "Pre Software"
+     _workloads_: "{{ pre_software_workloads | default([]) }}"

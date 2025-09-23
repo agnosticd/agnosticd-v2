@@ -1,0 +1,76 @@
+---
+- name: Step 005 - Post Software
+  hosts: localhost
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Print debug message
+    ansible.builtin.debug:
+      msg: "Step 005 Post Software"
+
+# ----------------------------------------------------------------------
+# Post-Software Workloads as role
+# ----------------------------------------------------------------------
+- name: Import post-software workloads
+  ansible.builtin.import_playbook: workloads.yml
+  vars:
+     _workload_title_: "Post Software"
+     _workloads_: "{{ post_software_workloads | default([]) }}"
+
+- name: Deploy user setup
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+  - name: Save user data for aws cloud provider
+    when: cloud_provider == 'aws'
+    block:
+    - name: print out user.info
+      agnosticd.core.agnosticd_user_info:
+        msg: |
+          SSH Host: ssh {{ student_name }}@{{ groups['bastions'][0].split('.')[0] }}.{{ guid }}.{{ base_domain }}
+          SSH Password: {{ student_password }}
+
+    - name: Save user data
+      agnosticd.core.agnosticd_user_info:
+        data:
+          ssh_command: "ssh {{ student_name }}@{{ groups['bastions'][0].split('.')[0] }}.{{ guid }}.{{ base_domain }}"
+          ssh_password: "{{ student_password }}"
+          ssh_username: "{{ student_name }}"
+          cloud_provider: "{{ cloud_provider }}"
+          targethost: "{{ groups['bastions'][0].split('.')[0] }}.{{ guid }}.{{ base_domain }}"
+          hostname: "{{ groups['bastions'][0].split('.')[0] }}.{{ guid }}.{{ base_domain }}"
+          base_domain: "{{ base_domain }}"
+          subdomain_internal: "{{ aws_dns_zone_private_chomped | default('') }}"
+      vars:
+        student_name: "{{ ansible_service_account_user_name }}"
+        bastion_prefix: "{{ groups['bastions'][0] | regex_replace('\\..*$') }}"
+      register: r_user_data
+
+    - name: Save user data for gcp cloud provider
+      when: cloud_provider == 'gcp'
+      block:
+      - name: print out user.info
+        agnosticd.core.agnosticd_user_info:
+          msg: |
+            SSH Host: ssh {{ student_name }}@bastion.{{ guid }}.{{ base_domain }}
+            SSH Password: {{ student_password }}
+
+      - name: Save user data
+        agnosticd.core.agnosticd_user_info:
+          data:
+            ssh_command: "ssh {{ student_name }}@bastion.{{ guid }}.{{ base_domain }}"
+            ssh_password: "{{ student_password }}"
+            ssh_username: "{{ student_name }}"
+            cloud_provider: "{{ cloud_provider }}"
+            hostname: "bastion.{{ guid }}.{{ base_domain }}"
+            base_domain: "{{ base_domain }}"
+
+# ----------------------------------------------------------------------
+# Final Post-software Workloads as role
+# ----------------------------------------------------------------------
+- name: Import final post-software workloads (Final Tasks of Deployment)
+  ansible.builtin.import_playbook: workloads.yml
+  vars:
+    _workload_title_: "Post Software Final"
+    _workloads_: "{{ post_software_final_workloads | default([]) }}"

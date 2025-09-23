@@ -1,0 +1,97 @@
+---
+# -------------------------------------------------
+# General variables
+# -------------------------------------------------
+
+# Why is this config being deployed? Override for specific environments
+# Valid options are: development, test, production, event
+purpose: development
+
+# The output_dir holds all of the files generated during the deployment
+# This includes generated Heat templates, SSH config, SSH keys
+# This must be an absolute path and no vars (like $HOME or ~)
+output_dir: /tmp/output_dir
+
+# The {{ guid }} is used everywhere and it is what differentiates otherwise
+# identical environments. Make this unique. Usually they are 4 characters, but
+# it can be any reasonable length.
+guid: notset
+uuid: "{{ guid }}"
+
+# Used to add metadata (tags) to cloud objects created
+project_tag: "{{ config }}-{{ guid }}"
+
+# Base Domain to be used for the environment
+# Should ideally be set by a Sandbox and passed to the config
+base_domain: dynamic.redhatworkshops.io
+
+email: "{{ config }}@opentlc.com"
+
+#[ Login Settings ]
+install_ipa_client: false
+
+#[ Run a full yum update ]
+update_packages: false
+
+#[ Variables you should ***NOT*** configure for you deployment ]
+#[ You can, but you usually wouldn't need to. ]
+admin_user: opentlc-mgr
+ansible_user: ec2-user
+# remote_user: ec2-user
+
+#[ Is this running from Red Hat Ansible Tower ]
+tower_run: false
+
+# ===================================================================
+# Additional Collections & roles to be installed for this config
+# ===================================================================
+# requirements_content:
+#   collections:
+#   # Cloud VMs Workloads
+#   - name: https://github.com/agnosticd/cloud_vm.git
+#     type: git
+#     version: main
+
+# -------------------------------------------------
+# Role: control-user
+# -------------------------------------------------
+env_authorized_key: "{{guid}}key"
+install_control_user: true
+student_name: lab-user
+student_password: ""
+control_user_name: "{{ student_name }}"
+control_user_password: ""
+control_user_private_group: "{{ omit }}"
+control_user_ssh_config: ./files/ssh_config.j2
+
+# -------------------------------------------------
+# Set up Bastion
+# -------------------------------------------------
+install_bastion: true
+
+# -------------------------------------------------
+# Call role host_satellite_repositories
+# -------------------------------------------------
+install_satellite_repositories: true
+
+# These vars are needed and need to come from secrets:
+# host_satellite_repositories_hostname:
+# host_satellite_repositories_ha:
+# host_satellite_repositories_org:
+# host_satellite_repositories_activationkey:
+
+# -------------------------------------------------
+# Call role host_common_packages
+# -------------------------------------------------
+# Packages to install on all of the hosts deployed as part of the agnosticd config
+# This invokes the host_common_packages role
+install_common_packages: true
+
+# To install extra packages (beyond what's in the common list of packages)
+# host_common_packages_extramon_extra_packages:
+# - java-17-openjdk
+# - maven
+# - podman
+
+# Run a full dnf update on the hosts
+host_common_packages_update_all: false

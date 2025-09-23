@@ -1,0 +1,18 @@
+---
+- name: Step 004 - Software
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Print debug message
+    ansible.builtin.debug:
+      msg: "Step 004 Software"
+
+# ----------------------------------------------------------------------
+# Software Workloads as role
+# ----------------------------------------------------------------------
+- name: Import software workloads
+  ansible.builtin.import_playbook: workloads.yml
+  vars:
+     _workload_title_: "Software"
+     _workloads_: "{{ software_workloads | default([]) }}"

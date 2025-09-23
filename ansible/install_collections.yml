@@ -1,0 +1,50 @@
+---
+- name: Get the list of installed collections
+  ansible.builtin.command: >-
+    ansible-galaxy collection list --format json
+  register: r_installed_collections
+
+- name: Create temporary file for requirements.yml
+  ansible.builtin.tempfile:
+    state: file
+    suffix: requirements.yml
+  register: r_tempfile
+
+- name: Rewrite requirements, filter out installed collections
+  vars:
+    installed_collections: >-
+      {{ r_installed_collections.stdout | from_json }}
+  ansible.builtin.copy:
+    dest: "{{ r_tempfile.path }}"
+    content: >-
+      {{ r_requirements_content
+      | agnosticd.core.agnosticd_filter_out_installed_collections(installed_collections)
+      | to_yaml }}
+    mode: ug=rw,o=r
+
+- name: Get COLLECTIONS_PATHS
+  ansible.builtin.set_fact:
+    _collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS') }}"
+
+- name: Debug COLLECTIONS_PATHS
+  ansible.builtin.debug:
+    var: _collections_path
+    verbosity: 2
+
+- name: Install collections from requirements.yml
+  vars:
+    __collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS')[0] }}"
+  ansible.builtin.command: >-
+    ansible-galaxy collection install
+    --requirements-file "{{ r_tempfile.path }}"
+    --collections-path "{{ __collections_path | quote }}"
+    --force-with-deps
+  register: r_ansible_galaxy_install_collections
+  until: r_ansible_galaxy_install_collections is successful
+  retries: 3
+  delay: 5
+
+- name: Cleanup tempfile
+  ansible.builtin.file:
+    path: "{{ r_tempfile.path }}"
+    state: absent

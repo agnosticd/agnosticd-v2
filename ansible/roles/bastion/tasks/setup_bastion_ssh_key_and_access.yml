@@ -31,6 +31,7 @@
   when:
   - l_inventory_name not in groups.windows | default([])
   - l_inventory_name not in groups.network | default([])
+  - l_inventory_name not in groups.isolated | default([])
   ansible.posix.authorized_key:
     user: "{{ ansible_user }}"
     state: present
@@ -45,6 +46,7 @@
   when:
   - l_inventory_name not in groups.windows | default([])
   - l_inventory_name not in groups.network | default([])
+  - l_inventory_name not in groups.isolated | default([])
   become: true
   ansible.posix.authorized_key:
     user: root

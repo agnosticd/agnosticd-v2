@@ -7,11 +7,6 @@
   vars:
     requirements_path: "configs/{{ config }}/requirements.yml"
     requirements_content: {}
-    __from_ee: >-
-      {{ lookup('env', 'LAUNCHED_BY_RUNNER') == '1'
-      or
-      lookup('env', 'HOME') == '/home/runner'
-      }}
   tasks:
   - name: Set output_dir if not defined
     when: output_dir is not defined
@@ -57,7 +52,7 @@
       ansible-galaxy install
       --role-file "{{ requirements_path_final }}"
       --roles-path "{%- if requirements_content | length > 0 -%}
-      {{ playbook_dir }}/dynamic-roles
+      {{ playbook_dir }}/dynamic_roles
       {%- else -%}
       {{ playbook_dir | default('.') }}/configs/{{ config }}/roles
       {%- endif -%}"
@@ -73,33 +68,16 @@
     retries: 5
     delay: 10
 
-  - name: Install collections from requirements.yml (Not EE)
-    vars:
-      __collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS')[0] }}"
-    ansible.builtin.command: >-
-      ansible-galaxy collection install
-      --requirements-file "{{ requirements_path_final }}"
-      --collections-path "{{ __collections_path | quote }}"
-      --force-with-deps
+  - name: Install collections
     when: >-
-      not __from_ee | bool
-      and r_requirements_stat.stat.exists
-      and r_requirements_content | default([]) | length > 0
+      r_requirements_content | default([]) | length > 0
       and r_requirements_content is mapping
       and "collections" in r_requirements_content
-      and __collections_path.startswith('/tmp/')
-    register: r_ansible_galaxy_install_collections
-    until: r_ansible_galaxy_install_collections is successful
-    retries: 5
-    delay: 10
+    ansible.builtin.include_tasks: install_collections.yml
 
-  - name: Install collections (EE)
-    when: >-
-      __from_ee | bool
-      and r_requirements_content | default([]) | length > 0
-      and r_requirements_content is mapping
-      and "collections" in r_requirements_content
-    ansible.builtin.include_tasks: install_collections_ee.yml
+  - name: Install cloud provider
+    when: cloud_provider is defined and cloud_provider | length > 0 and cloud_provider != 'none'
+    ansible.builtin.include_tasks: install_cloud_provider.yml
 
   - name: Install dynamic sources
     ansible.builtin.include_role:

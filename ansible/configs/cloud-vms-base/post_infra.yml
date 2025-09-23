@@ -1,0 +1,19 @@
+---
+- name: Step 002 - Post Infrastructure
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Print debug message
+    ansible.builtin.debug:
+      msg: "Step 002 Post Infrastructure"
+
+# ----------------------------------------------------------------------
+# Post-infra workloads as role
+# ----------------------------------------------------------------------
+- name: Import post-infra workloads
+  ansible.builtin.import_playbook: workloads.yml
+  vars:
+    _workload_title_: "Post Infra"
+    _workloads_: "{{ post_infra_workloads | default([]) }}"

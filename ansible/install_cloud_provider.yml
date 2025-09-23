@@ -1,0 +1,39 @@
+---
+- name: Create temporary file for cloud provider requirements.yml
+  ansible.builtin.tempfile:
+    state: file
+    suffix: cprequirements.yml
+  register: r_tempfile
+
+- name: Add Cloud provider collection to requirements
+  ansible.builtin.blockinfile:
+    path: "{{ r_tempfile.path }}"
+    block: |
+      # Cloud Provider Collection for {{ cloud_provider }}
+      collections:
+      - name: https://github.com/agnosticd/cloud_provider_{{ cloud_provider }}.git
+        type: git
+        version: {{ cloud_provider_version | default('main') }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - cloud provider collection"
+
+- name: Get COLLECTIONS_PATHS
+  ansible.builtin.set_fact:
+    _collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS') }}"
+
+- name: Install collections from requirements.yml
+  vars:
+    __collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS')[0] }}"
+  ansible.builtin.command: >-
+    ansible-galaxy collection install
+    --requirements-file "{{ r_tempfile.path }}"
+    --collections-path "{{ __collections_path | quote }}"
+    --force-with-deps
+  register: r_ansible_galaxy_install_collections
+  until: r_ansible_galaxy_install_collections is successful
+  retries: 3
+  delay: 5
+
+- name: Cleanup tempfile (EE)
+  ansible.builtin.file:
+    path: "{{ r_tempfile.path }}"
+    state: absent

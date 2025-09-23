@@ -35,7 +35,7 @@ ansible/requirements_collections/*
 artifacts
 destroy-artifact-*
 dynamic-cache
-dynamic-roles
+dynamic_roles
 main-artifact-*
 my_*_vars.yml
 scripts/*.rc

@@ -4,7 +4,7 @@
   gather_facts: false
   become: false
   tasks:
-  - name: Destroy namespaced workloads
+  - name: Destroy namespaced workloads in reverse order
     when: workloads | default([]) | length > 0
     block:
     - name: Remove namespaced workload "{{ workload_loop_var }}"
@@ -12,15 +12,6 @@
         name: "{{ workload_loop_var }}"
       vars:
         ACTION: "destroy"
-        # Pass through OpenShift connection variables
-        sandbox_openshift_cluster: "{{ sandbox_openshift_cluster | default('') }}"
-        sandbox_openshift_api_url: "{{ sandbox_openshift_api_url | default('') }}"
-        sandbox_openshift_apps_domain: "{{ sandbox_openshift_apps_domain | default('') }}"
-        sandbox_openshift_namespace: "{{ sandbox_openshift_namespace | default('') }}"
-        sandbox_openshift_api_token: "{{ sandbox_openshift_api_token | default('') }}"
-        sandbox_openshift_credentials: "{{ sandbox_openshift_credentials | default([]) }}"
-        sandbox_openshift_user: "{{ sandbox_openshift_user | default('') }}"
-        sandbox_openshift_password: "{{ sandbox_openshift_password | default('') }}"
-      loop: "{{ workloads }}"
+      loop: "{{ workloads | reverse }}"
       loop_control:
         loop_var: workload_loop_var

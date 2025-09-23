@@ -36,6 +36,7 @@
 - name: Add the service (type LoadBalancer) for full clusters - workers
   vars:
     svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
+    role: "{{ 'control-plane' if worker_instance_count | int == 0 else 'worker' }}"
   kubernetes.core.k8s:
     definition: "{{ lookup('ansible.builtin.template', 'workers_svc.yaml.j2') | from_yaml }}"
     wait: true

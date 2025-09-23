@@ -1,5 +1,5 @@
 ---
-- name: Add the service (type LoadBalancer) for SNO
+- name: Add the service (type LoadBalancer) for SNO/Compact
   vars:
     svcname: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
   kubernetes.core.k8s:

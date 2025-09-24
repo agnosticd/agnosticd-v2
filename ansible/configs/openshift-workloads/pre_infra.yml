@@ -5,6 +5,7 @@
   become: false
   gather_facts: false
   tasks:
-  - name: Print stage message
-    ansible.builtin.debug:
-      msg: "Step 000 Pre-Infrastructure"
+  - name: Call Role to scale OpenShift using Assisted Installer
+    when: openshift_cnv_scale_cluster | default(false) | bool
+    ansible.builtin.include_role:
+      name: host-ocp4-assisted-scale

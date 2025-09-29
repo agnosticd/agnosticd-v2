@@ -54,8 +54,8 @@
 
 - name: Set facts for OpenShift console and API
   ansible.builtin.set_fact:
-    openshift_api_url: "{{ r_api.resources[0].status.apiServerURL | urlsplit('hostname') }}"
-    openshift_cluster_ingress_domain: "{{ r_ingress.resources[0].spec.domain }}"
+    openshift_api_url: "{{ r_api.resources[0].status.apiServerURL | trim }}"
+    openshift_cluster_ingress_domain: "{{ r_ingress.resources[0].spec.domain | trim }}"
 
 - name: Set user data for OpenShift access
   agnosticd.core.agnosticd_user_info:

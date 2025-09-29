@@ -32,6 +32,7 @@ collections:
 - name: google.cloud
 
 # Needs awx.awx collection
+- name: infra.aap_configuration
 - name: infra.controller_configuration
 - name: infra.eda_configuration
 

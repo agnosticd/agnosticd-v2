@@ -53,9 +53,9 @@
 
 - name: Set facts for OpenShift access
   ansible.builtin.set_fact:
-    openshift_api_url: "{{ r_api.resources[0].status.apiServerURL | urlsplit('hostname') }}"
-    openshift_console_url: "{{ r_console.resources[0].status.consoleURL }}"
-    openshift_cluster_ingress_domain: "{{ r_ingress.resources[0].spec.domain }}"
+    openshift_api_url: "{{ r_api.resources[0].status.apiServerURL | trim }}"
+    openshift_console_url: "{{ r_console.resources[0].status.consoleURL | trim }}"
+    openshift_cluster_ingress_domain: "{{ r_ingress.resources[0].spec.domain | trim }}"
     openshift_kubeadmin_password: "{{ r_slurp_kubeadmin_password.content | b64decode }}"
 
 - name: Set user data for kubeadmin password

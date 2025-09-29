@@ -1,44 +1,41 @@
 ---
 collections:
-# boto3 >= 1.18.0
-# botocore >= 1.21.0
-- name: amazon.aws
-
 - name: ansible.netcommon
 - name: ansible.posix
 - name: ansible.utils
 - name: ansible.windows
 
-- name: awx.awx
-
-# requirements-azure.txt from the collection
-- name: azure.azcollection
-
 # cryptography
 - name: community.crypto
 - name: community.general
 
-# kubernetes>=12.0.0
-# requests-oauthlib
-- name: community.okd
-
-# requirements.txt from the collection
-- name: community.vmware
-- name: vmware.vmware_rest
-
 - name: containers.podman
 
-# requirements.txt from the collection
-- name: google.cloud
+# kubernetes>=12.0.0
+# requests-oauthlib
+# jsonpatch
+- name: kubernetes.core
+- name: kubevirt.core
+- name: community.okd
 
+# Ansible stuff
+- name: awx.awx
 # Needs awx.awx collection
 - name: infra.aap_configuration
 - name: infra.controller_configuration
 - name: infra.eda_configuration
 
-# kubernetes>=12.0.0
-# requests-oauthlib
-# jsonpatch
-# From requirements.txt
-- name: kubernetes.core
-- name: kubevirt.core
+# Cloud Provider Collections
+# boto3 >= 1.18.0
+# botocore >= 1.21.0
+- name: amazon.aws
+
+# requirements-azure.txt from the collection
+- name: azure.azcollection
+
+# requirements.txt from the collection
+- name: google.cloud
+
+# requirements.txt from the collection
+- name: community.vmware
+- name: vmware.vmware_rest

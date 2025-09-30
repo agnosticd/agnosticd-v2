@@ -87,7 +87,7 @@ RUN /tmp/install_binaries.sh
 
 # Azure CLI
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc \
-    && dnf install -y https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm \
+    && dnf install -y https://packages.microsoft.com/config/rhel/9/packages-microsoft-prod.rpm \
     && dnf install -y azure-cli \
     && dnf clean all
 

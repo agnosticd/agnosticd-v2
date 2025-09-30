@@ -2,14 +2,9 @@
 # Build base image
 # ----------------------------------------------------------------------------------
 ARG EE_BASE_IMAGE="registry.access.redhat.com/ubi9/ubi"
-ARG AAP_CERTIFIED_TOKEN
-ARG AAP_VALIDATED_TOKEN
 
 # Building base
 FROM $EE_BASE_IMAGE as base
-
-ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
-ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
 
 USER root
 WORKDIR /root
@@ -49,11 +44,11 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 # ----------------------------------------------------------------------------------
 FROM base as galaxy
 
-ARG AAP_CERTIFIED_TOKEN
-ARG AAP_VALIDATED_TOKEN
+ARG AAP_CERTIFIED_TOKEN=notset
+ARG AAP_VALIDATED_TOKEN=notset
 
-ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
-ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
+# ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
+# ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
 
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml

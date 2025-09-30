@@ -4,7 +4,7 @@ name: build-ee-pr
 on:
   pull_request:
     paths:
-      - tools/execution_environments/ee-multicloud-public/**
+    - tools/execution_environments/ee-multicloud-public/**
 
 jobs:
   build-and-push:

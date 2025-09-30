@@ -47,9 +47,6 @@ FROM base as galaxy
 ARG AAP_CERTIFIED_TOKEN=notset
 ARG AAP_VALIDATED_TOKEN=notset
 
-# ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
-# ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
-
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml
 
@@ -58,8 +55,12 @@ RUN echo Certified Token: ${AAP_CERTIFIED_TOKEN}
 RUN echo Validated Token: ${AAP_VALIDATED_TOKEN}
 RUN echo --------------------------------------------------
 
+# Set tokens as environment variables for ansible-galaxy to use with the configured servers
+ENV ANSIBLE_GALAXY_SERVER_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
+ENV ANSIBLE_GALAXY_SERVER_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
+
 RUN ansible-galaxy role install -r /tmp/requirements.yml --roles-path "/usr/share/ansible/roles"
-RUN ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections" --token ${AAP_CERTIFIED_TOKEN}
+RUN ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections"
 
 
 # ----------------------------------------------------------------------------------

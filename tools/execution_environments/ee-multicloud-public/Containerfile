@@ -58,8 +58,13 @@ ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml
 
+RUN echo --------------------------------------------------
+RUN echo Certified Token: ${AAP_CERTIFIED_TOKEN}
+RUN echo Validated Token: ${AAP_VALIDATED_TOKEN}
+RUN echo --------------------------------------------------
+
 RUN ansible-galaxy role install -r /tmp/requirements.yml --roles-path "/usr/share/ansible/roles"
-RUN ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections"
+RUN ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections" --token ${AAP_CERTIFIED_TOKEN}
 
 
 # ----------------------------------------------------------------------------------

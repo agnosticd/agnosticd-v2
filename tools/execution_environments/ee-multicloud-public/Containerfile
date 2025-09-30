@@ -35,7 +35,7 @@ RUN dnf install -y \
         tar \
         unzip \
         vim \
-        curl \
+        curl-minimal \
         wget
 RUN dnf clean all
 

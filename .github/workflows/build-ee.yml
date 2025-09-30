@@ -21,6 +21,12 @@ on:
       registry_password:
         description: 'password to login to Quay.io'
         required: true
+      aap_certified_token:
+        description: 'AAP Certified Token'
+        required: true
+      aap_validated_token:
+        description: 'AAP Validated Token'
+        required: true
 
 jobs:
   build-and-push:
@@ -62,6 +68,9 @@ jobs:
           containerfiles: |-
             tools/execution_environments/ee-multicloud-public/Containerfile
           layers: true
+          build-args: |
+            AAP_CERTIFIED_TOKEN=${{ secrets.aap_certified_token }}
+            AAP_VALIDATED_TOKEN=${{ secrets.aap_validated_token }}
 
       -  name: Push To quay.io
          id: push-to-quay

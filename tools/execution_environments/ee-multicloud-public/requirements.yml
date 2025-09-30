@@ -4,7 +4,6 @@ collections:
 - name: ansible.posix
 - name: ansible.utils
 - name: ansible.windows
-- name: ansible.controller
 
 # cryptography
 - name: community.crypto
@@ -18,6 +17,23 @@ collections:
 - name: kubernetes.core
 - name: kubevirt.core
 - name: community.okd
+
+# -----------------------------------------
+# Red Hat certified collections
+# -----------------------------------------
+- name: ansible.controller
+- name: ansible.eda
+- name: ansible.hub
+- name: ansible.platform
+- name: redhat.rhbk
+- name: redhat.trusted_profile_analyzer
+- name: redhat.insights
+- name: redhat.rhel_system_roles
+- name: redhat.artifact_signer
+- name: redhat.satellite
+- name: redhat.openshift
+- name: redhat.openshift_virtualization
+# -----------------------------------------
 
 # Ansible stuff
 - name: awx.awx

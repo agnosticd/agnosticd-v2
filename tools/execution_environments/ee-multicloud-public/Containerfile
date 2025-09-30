@@ -1,11 +1,15 @@
-FROM registry.access.redhat.com/ubi8/ubi
+# ----------------------------------------------------------------------------------
+# Build base image
+# ----------------------------------------------------------------------------------
+ARG EE_BASE_IMAGE="registry.access.redhat.com/ubi9/ubi"
+ARG AAP_CERTIFIED_TOKEN
+ARG AAP_VALIDATED_TOKEN
 
-ENV DESCRIPTION="Community Chained Execution Environment for AgnosticD and Red Hat Demo Platform"
-LABEL ansible-execution-environment=true \
-      name="agnosticd/ee-multicloud" \
-      maintainer="Red Hat CoP" \
-      description="${DESCRIPTION}" \
-      summary="${DESCRIPTION}"
+# Building base
+FROM $EE_BASE_IMAGE as base
+
+ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
+ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
 
 USER root
 WORKDIR /root
@@ -32,8 +36,8 @@ RUN dnf install -y \
         unzip \
         vim \
         curl \
-        wget \
-    && dnf clean all
+        wget
+RUN dnf clean all
 
 # Python
 RUN alternatives --set python /usr/bin/python3.11 \
@@ -43,19 +47,41 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Galaxy collections and roles
+# ----------------------------------------------------------------------------------
+# Build Galaxy image from base image
+# ----------------------------------------------------------------------------------
+FROM base as galaxy
+
+ARG AAP_CERTIFIED_TOKEN
+ARG AAP_VALIDATED_TOKEN
+
+ENV AAP_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
+ENV AAP_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
+
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml
-RUN ansible-galaxy role install \
-    -r /tmp/requirements.yml \
-    --roles-path "/usr/share/ansible/roles" \
-    && ansible-galaxy collection install -vv \
-    -r /tmp/requirements.yml \
-    --collections-path "/usr/share/ansible/collections" \
-    && pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/azure/azcollection/requirements.txt \
-    && pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/community/vmware/requirements.txt \
-    && pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/google/cloud/requirements.txt \
-    && pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/kubernetes/core/requirements.txt
+
+RUN ansible-galaxy role install -r /tmp/requirements.yml --roles-path "/usr/share/ansible/roles"
+RUN ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections"
+
+
+# ----------------------------------------------------------------------------------
+# Build Execution Environment image from base & galaxy images
+# ----------------------------------------------------------------------------------
+FROM base as final
+
+ENV DESCRIPTION="Community Chained Execution Environment for AgnosticD and Red Hat Demo Platform"
+LABEL ansible-execution-environment=true \
+      name="agnosticd/ee-multicloud" \
+      maintainer="Red Hat CoP" \
+      description="${DESCRIPTION}" \
+      summary="${DESCRIPTION}"
+
+COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/azure/azcollection/requirements.txt
+RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/community/vmware/requirements.txt
+RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/google/cloud/requirements.txt
+RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/kubernetes/core/requirements.txt
 
 # AWS, Bitwarden, OC client
 COPY install_binaries.sh /tmp/install_binaries.sh

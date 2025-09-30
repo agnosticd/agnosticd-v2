@@ -16,6 +16,8 @@ jobs:
     secrets:
       registry_username: ${{ secrets.QUAY_EE_MULTICLOUD_USER }}
       registry_password: ${{ secrets.QUAY_EE_MULTICLOUD_TOKEN }}
+      aap_certified_token: ${{ secrets.AAP_CERTIFIED_TOKEN }}
+      aap_validated_token: ${{ secrets.AAP_VALIDATED_TOKEN }}
     with:
       tag: chained-temporary-pr-${{ github.event.number }}
       labels: |-

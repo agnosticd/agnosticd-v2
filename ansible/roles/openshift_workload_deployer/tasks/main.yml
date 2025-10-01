@@ -19,10 +19,6 @@
   ansible.builtin.debug:
     var: openshift_workload_deployer_clusters | map('dict2items') | list
 
-# - name: Pause for 10 minutes
-#   ansible.builtin.pause:
-#     minutes: 10
-
 - name: Get cluster information for each cluster
   ansible.builtin.include_tasks: get_cluster_info.yml
   loop: "{{ openshift_workload_deployer_clusters | map('dict2items') | list }}"

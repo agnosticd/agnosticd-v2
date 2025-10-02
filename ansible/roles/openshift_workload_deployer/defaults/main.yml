@@ -39,3 +39,4 @@ openshift_workload_deployer_clusters:
 # - rhpds.mitzi.ocp4_workload_mitzi_db
 
 openshift_workload_deployer_workloads: []
+openshift_workload_deployer_remove_workloads: []

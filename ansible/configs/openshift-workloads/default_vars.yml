@@ -46,5 +46,5 @@ clusters:
 # - agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
 # - rhpds.mitzi.ocp4_workload_mitzi_app
 # - rhpds.mitzi.ocp4_workload_mitzi_db
-
+remove_workloads: []
 workloads: []

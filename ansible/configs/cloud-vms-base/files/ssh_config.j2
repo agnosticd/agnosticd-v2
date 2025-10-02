@@ -2,9 +2,6 @@ Host *
 {% if cloud_provider == 'aws' %}
   User ec2-user
 {% endif %}
-{% if cloud_provider == 'gcp' %}
-  User gcpuser
-{% endif %}
   IdentityFile ~/.ssh/{{ guid }}key.pem
   ForwardAgent yes
   StrictHostKeyChecking no

@@ -64,20 +64,6 @@ ansible_user=Administrator
 {% endfor %}
 {% endif %}
 
-{% if groups.rhel7_nodes is defined %}
-[rhel7_nodes]
-{% for host in groups['rhel7_nodes'] %}
-{{ host.split('.')[0] }} ansible_host={{ host }}
-{% endfor %}
-{% endif %}
-
-{% if groups.rhel8_nodes is defined %}
-[rhel8_nodes]
-{% for host in groups['rhel8_nodes'] %}
-{{ host.split('.')[0] }} ansible_host={{ host }}
-{% endfor %}
-{% endif %}
-
 {% if groups.rhel9_nodes is defined %}
 [rhel9_nodes]
 {% for host in groups['rhel9_nodes'] %}

@@ -5,11 +5,11 @@
     - route53_aws_zone_id | default('') | length > 0
     - route53_aws_access_key_id | default('') | length > 0
     - route53_aws_secret_access_key | default('') | length > 0
-    - cluster_dns_zone | default('') | length > 0
+    - route53_zone | default(cluster_dns_zone) | default('') | length > 0
     fail_msg: |
       All the following variables must be defined:
       - route53_aws_zone_id
       - route53_aws_access_key_id
       - route53_aws_secret_access_key
-      - cluster_dns_zone
+      - route53_zone
     quiet: true

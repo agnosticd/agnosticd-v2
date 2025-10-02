@@ -24,7 +24,7 @@
   - name: Workloads übernehmen (falls bereits komplexes Format)
     when: not _workloads_simple_format
     ansible.builtin.set_fact:
-      _workloads: "{{ workloads }}"
+      _workloads: "{{ remove_workloads }}"
 
   - name: Destroy Workloads on cluster(s)
     when: remove_workloads | length > 0

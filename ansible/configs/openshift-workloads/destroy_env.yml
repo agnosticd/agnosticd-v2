@@ -31,5 +31,5 @@
       name: openshift_workload_deployer
     vars:
       ACTION: destroy
-      openshift_workload_deployer_workloads: "{{ cluster_workloads }}"
+      openshift_workload_deployer_workloads: "{{ _workloads }}"
       openshift_workload_deployer_clusters: "{{ clusters }}"

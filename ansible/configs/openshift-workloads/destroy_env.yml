@@ -5,21 +5,21 @@
   become: false
   gather_facts: false
   tasks:
-  - name: Check that workloads is a list
-    when: workloads is not defined or workloads is not sequence
+  - name: Check that remove_workloads is a list
+    when: remove_workloads is not defined or remove_workloads is not sequence
     ansible.builtin.fail:
-      msg: "Workloads variable is either not defined or is not a list"
+      msg: "remove_workloads variable is either not defined or is not a list"
 
   - name: Check if workloads is a simple list (no 'clusters' key)
     ansible.builtin.set_fact:
       _workloads_simple_format: >-
-        {{ (workloads | length > 0) and (workloads[0].clusters is not defined) }}
+        {{ (remove_workloads | length > 0) and (workloads[0].clusters is not defined) }}
 
   - name: Convert simple format to complex format
     when: _workloads_simple_format
     ansible.builtin.set_fact:
       _workloads: >-
-        {{ workloads | json_query("[].{name: name, clusters: ['default']}") }}
+        {{ remove_workloads | json_query("[].{name: name, clusters: ['default']}") }}
 
   - name: Workloads übernehmen (falls bereits komplexes Format)
     when: not _workloads_simple_format
@@ -27,6 +27,7 @@
       _workloads: "{{ workloads }}"
 
   - name: Destroy Workloads on cluster(s)
+    when: remove_workloads | length > 0
     ansible.builtin.include_role:
       name: openshift_workload_deployer
     vars:

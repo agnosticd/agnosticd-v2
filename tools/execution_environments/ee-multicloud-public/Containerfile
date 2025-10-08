@@ -10,6 +10,7 @@ USER root
 WORKDIR /root
 
 RUN dnf install -y \
+        alternatives \
         bind-utils \
         findutils \
         gcc \

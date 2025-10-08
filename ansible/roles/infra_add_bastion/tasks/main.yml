@@ -1,0 +1,17 @@
+---
+- name: Check required variables
+  ansible.builtin.assert:
+    that:
+    - bastion_ansible_host is defined
+    - bastion_ansible_user is defined
+    - bastion_ansible_ssh_pass is defined
+
+- name: Add bastion host
+  ansible.builtin.add_host:
+    name: "{{ bastion_inventory_hostname }}"
+    group: bastions
+    ansible_host: "{{ bastion_ansible_host }}"
+    ansible_port: "{{ bastion_ansible_port | default(omit) }}"
+    ansible_ssh_pass: "{{ bastion_ansible_ssh_pass }}"
+    ansible_ssh_pipelining: "{{ ansible_ssh_pipelining }}"
+    ansible_user: "{{ bastion_ansible_user }}"

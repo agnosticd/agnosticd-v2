@@ -313,7 +313,7 @@ Deploy a new environment using the `provision` command:
 
 [source,sh]
 ----
-./bin/agd provision --guid myocp --config openshift-cluster --account sandbox1234
+./bin/agd provision --guid myocp --config openshift-cluster-aws --account sandbox1234
 ----
 
 *Short form*:
@@ -328,7 +328,7 @@ Remove a deployed environment:
 
 [source,sh]
 ----
-./bin/agd destroy --guid myocp --config openshift-cluster --account sandbox1234
+./bin/agd destroy --guid myocp --config openshift-cluster-aws --account sandbox1234
 ----
 
 === Stopping an Environment
@@ -337,7 +337,7 @@ Stop a running environment:
 
 [source,sh]
 ----
-./bin/agd stop --guid myocp --config openshift-cluster --account sandbox1234
+./bin/agd stop --guid myocp --config openshift-cluster-aws --account sandbox1234
 ----
 
 === Starting an Environment
@@ -346,7 +346,7 @@ Start a stopped environment:
 
 [source,sh]
 ----
-./bin/agd start --guid myocp --config openshift-cluster --account sandbox1234
+./bin/agd start --guid myocp --config openshift-cluster-aws --account sandbox1234
 ----
 
 === Checking Environment Status
@@ -355,5 +355,5 @@ Get the current status of an environment:
 
 [source,sh]
 ----
-./bin/agd status --guid myocp --config openshift-cluster --account sandbox1234
+./bin/agd status --guid myocp --config openshift-cluster-aws --account sandbox1234
 ----

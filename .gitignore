@@ -44,3 +44,4 @@ set-env.sh
 user-data.yaml
 user-info.yaml
 venv
+.python-version

@@ -102,6 +102,7 @@ agd_setup() {
           if [ "$dir" == "$SECRETS_DIR" ]; then
               cp bin/templates/secrets.yml "$dir" 2>&1 >/dev/null
               cp bin/templates/secrets-sandboxXXX.yml "$dir" 2>&1 >/dev/null
+              cp bin/templates/secrets-cnvdev.yml "$dir" 2>&1 >/dev/null
               cp bin/templates/secrets-cluster.yml "$dir" 2>&1 >/dev/null
               echo "  Copied secrets template files to $dir"
           elif [ "$dir" == "$VARS_DIR" ]; then
@@ -239,8 +240,8 @@ run_ansible_navigator() {
 #
 # -------------------------------------------------------------------
 
-# Check if we are inside the agnosticd-v2 directory
-if [ "$(basename "$PWD")" != "agnosticd-v2" ]; then
+# Check if we are inside the agnosticd-v2 directory (resolve symlinks)
+if [ "$(basename $(pwd -P))" != "agnosticd-v2" ]; then
     echo "  ERROR: This script must be run from within the agnosticd-v2 directory."
     exit 1
 fi

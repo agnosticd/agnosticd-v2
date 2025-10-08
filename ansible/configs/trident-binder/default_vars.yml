@@ -1,0 +1,84 @@
+---
+# ===================================================================
+# Additional Collections & roles to be installed for this config
+# ===================================================================
+# requirements_content:
+#   collections:
+#   # Core OpenShift Workloads
+#   - name: https://github.com/agnosticd/core_workloads.git
+#     type: git
+#     version: main
+
+# List of Clusters with credentials
+# A cluster with name `default` is used when no target clusters are specified for the individual workloads
+# clusters
+# - openshift_app:
+#     api_url: ...
+#     api_token: ...
+#
+# - openshift_db:
+#     api_url: ...
+#     api_token: ...
+clusters:
+- default:
+    api_url: "<FROM SECRET>"
+    api_token: "<FROM SECRET>"
+
+# List of workloads to apply to clusters with cluster selector
+#
+# If no clusters are specified then the default cluster is used.
+# If clusters are specified cluster names must match a cluster in the list of clusters
+#
+# workloads:
+# - name: agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
+#   clusters:
+#   - openshift_app
+#   - openshift_db
+# - name: rhpds.mitzi.ocp4_workload_mitzi_app
+#   clusters:
+#   - openshift_app
+# - name: rhpds.mitzi.ocp4_workload_mitzi_db
+#   clusters:
+#   - openshift_db
+#
+# Simple example (all workloads deployed to the default cluster):
+# workloads:
+# - agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
+# - rhpds.mitzi.ocp4_workload_mitzi_app
+# - rhpds.mitzi.ocp4_workload_mitzi_db
+
+workloads: []
+
+ocp_dr_trident_starting_csv: "trident-operator.v25.6.1"
+ocp_dr_trident_helm_chart_version: "100.2506.0"
+
+ocp_dr_trident_first_rosa_cidr: "10.0.0.0/16"
+ocp_dr_trident_second_rosa_name: "dr-{{ guid }}"
+ocp_dr_trident_second_rosa_cidr: "10.10.0.0/16"
+ocp_dr_trident_second_rosa_compute_replicas: 2
+ocp_dr_trident_second_rosa_version: "4.16.37"
+
+ocp_dr_trident_second_rosa_binary_path: "/usr/local/bin"
+ocp_dr_trident_second_rosa_installer_version: latest
+ocp_dr_trident_second_rosa_installer_url: >-
+  https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/rosa/{{ rosa_installer_version }}/rosa-linux.tar.gz
+
+ocp_dr_trident_bastion_cidr: "192.168.0.0/16"
+
+ocp_dr_trident_fsx_name1: PROD-FSXONTAP
+ocp_dr_trident_fsx_name2: DR-FSXONTAP
+
+ocp_dr_trident_fsx_storage_vm_name1: SVM1
+ocp_dr_trident_fsx_storage_vm_name2: SVM2
+
+ocp_dr_trident_policy_name1: ProdTridentIAMPolicy
+ocp_dr_trident_policy_name2: DRTridentIAMPolicy
+
+# Passwords will be generated.
+# If hardcoding: Passwords must be between 8 and 128 characters in length, must contain at least one English letter
+#                and one number, and must not contain the word 'admin'.
+ocp_dr_trident_fsx_admin_password: ""
+ocp_dr_trident_svm_admin_password: ""
+
+# Name of the S3 Bucket to be created
+ocp4_workload_dr_trident_s3_bucket_name: "bucket-{{ guid }}"

@@ -22,9 +22,9 @@ RUN dnf install -y \
         libxml2-devel \
         openssl \
         openssl-devel \
-        python3.11 \
-        python3.11-devel \
-        python3.11-pip \
+        python3.12 \
+        python3.12-devel \
+        python3.12-pip \
         rsync \ 
         sshpass \
         tar \
@@ -35,9 +35,9 @@ RUN dnf install -y \
 RUN dnf clean all
 
 # Python
-RUN alternatives --set python /usr/bin/python3.11 \
-    && alternatives --set python3 /usr/bin/python3.11 \
-    && alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
+RUN alternatives --set python /usr/bin/python3.12 \
+    && alternatives --set python3 /usr/bin/python3.12 \
+    && alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 1
 RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt

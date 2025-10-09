@@ -2,8 +2,13 @@
 # ===================================================================
 # Mandatory Variables
 # ===================================================================
+# Repository Tag
+# Tag for all repositories that are used in this config.
+# ===================================================================
+tag: main
+# -------------------------------------------------------------------
 cloud_provider: aws
-cloud_provider_version: main
+cloud_provider_version: "{{ tag }}"
 config: openshift-cluster
 # ===================================================================
 # End Mandatory Variables
@@ -17,7 +22,7 @@ requirements_content:
   # Core OpenShift Workloads
   - name: https://github.com/agnosticd/core_workloads.git
     type: git
-    version: main
+    version: "{{ tag }}"
 
 # ===================================================================
 # AWS Specific settings

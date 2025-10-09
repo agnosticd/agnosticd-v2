@@ -31,7 +31,8 @@ RUN dnf install -y \
         unzip \
         vim \
         curl-minimal \
-        wget
+        wget \
+        httpd-tools
 RUN dnf clean all
 
 # Python

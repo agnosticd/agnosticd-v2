@@ -2,8 +2,13 @@
 # ===================================================================
 # Mandatory Variables
 # ===================================================================
+# Repository Tag
+# Tag for all repositories that are used in this config.
+# ===================================================================
+tag: main
+# -------------------------------------------------------------------
 cloud_provider: openshift_cnv
-cloud_provider_version: main
+cloud_provider_version: "{{ tag }}"
 config: openshift-cluster
 # ===================================================================
 # End Mandatory Variables
@@ -17,12 +22,12 @@ requirements_content:
   # Assisted Installer Collection
   - name: https://github.com/rhpds/assisted_installer.git
     type: git
-    version: v0.0.3
+    version: v0.0.8
 
   # Core OpenShift Workloads
   - name: https://github.com/agnosticd/core_workloads.git
     type: git
-    version: main
+    version: "{{ tag }}"
 
 # ===================================================================
 # CNV Specific settings

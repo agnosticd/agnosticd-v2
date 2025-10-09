@@ -2,6 +2,11 @@
 # ===================================================================
 # Mandatory Variables
 # ===================================================================
+# Repository Tag
+# Tag for all repositories that are used in this config.
+# ===================================================================
+tag: main
+# -------------------------------------------------------------------
 cloud_provider: none
 config: openshift-workloads
 # ===================================================================
@@ -16,7 +21,7 @@ requirements_content:
   # Core OpenShift Workloads
   - name: https://github.com/agnosticd/core_workloads.git
     type: git
-    version: main
+    version: "{{ tag }}"
 
 # ===================================================================
 # List of clusters with credentials. Credentials come from secrets

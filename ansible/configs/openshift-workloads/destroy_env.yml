@@ -21,7 +21,7 @@
       _workloads: >-
         {{ remove_workloads | json_query("[].{name: name, clusters: ['default']}") }}
 
-  - name: Workloads übernehmen (falls bereits komplexes Format)
+  - name: Set workloads (if already in complex format)
     when: not _workloads_simple_format
     ansible.builtin.set_fact:
       _workloads: "{{ remove_workloads }}"

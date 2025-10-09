@@ -1,0 +1,8 @@
+ansible==12.1.0
+tox
+flake8
+pylint
+pytest
+PyYAML
+yamllint
+setuptools-lint

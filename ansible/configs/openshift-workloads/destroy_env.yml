@@ -13,13 +13,13 @@
   - name: Check if workloads is a simple list (no 'clusters' key)
     ansible.builtin.set_fact:
       _workloads_simple_format: >-
-        {{ (remove_workloads | length > 0) and (workloads[0].clusters is not defined) }}
+        {{ (remove_workloads | length > 0) and (remove_workloads[0].clusters is not defined) }}
 
   - name: Convert simple format to complex format
     when: _workloads_simple_format
     ansible.builtin.set_fact:
       _workloads: >-
-        {{ remove_workloads | json_query("[].{name: name, clusters: ['default']}") }}
+        {{ remove_workloads | json_query("[].{name: @, clusters: ['default']}") }}
 
   - name: Set workloads (if already in complex format)
     when: not _workloads_simple_format

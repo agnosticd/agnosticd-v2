@@ -8,7 +8,7 @@ on:
 
 jobs:
   static-checks:
-    name: Run static tests using tox
+    name: Run static tests using tox (Pull Request)
     runs-on: ubuntu-latest
     strategy:
       matrix:

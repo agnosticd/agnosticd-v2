@@ -13,7 +13,7 @@
   - name: Check if workloads is a simple list (no 'clusters' key)
     ansible.builtin.set_fact:
       _workloads_simple_format: >-
-        {{ (workloads | length > 0) and (workloads[0].clusters is not defined) }}
+        {{ (workloads | length > 0) and (not workloads[0] is mapping) }}
 
   - name: Convert simple format to complex format
     when: _workloads_simple_format | bool

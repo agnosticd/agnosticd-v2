@@ -37,18 +37,8 @@
     msg: "{{ _openshift_workload_deployer_cluster_info }}"
 
 - name: Deploy workloads to clusters
-  ansible.builtin.include_role:
-    name: "{{ workload_item.0.name }}"
-    apply:
-      environment:
-        K8S_AUTH_HOST: "{{ _cluster_configs[workload_item.1].api_url }}"
-        K8S_AUTH_API_KEY: "{{ _cluster_configs[workload_item.1].api_token }}"
-        K8S_AUTH_VERIFY_SSL: false
-  loop: "{{ openshift_workload_deployer_workloads | subelements('clusters') }}"
+  ansible.builtin.include_tasks: run_workload_on_clusters.yml
+  loop: "{{ openshift_workload_deployer_workloads }}"
   loop_control:
     loop_var: workload_item
-    label: "Role: {{ workload_item.0.name }} on Cluster: {{ workload_item.1 }}"
-  vars:
-    openshift_api_url: "{{ _openshift_workload_deployer_cluster_info[workload_item.1].api_url }}"
-    openshift_console_url: "{{ _openshift_workload_deployer_cluster_info[workload_item.1].console_url }}"
-    openshift_cluster_ingress_domain: "{{ _openshift_workload_deployer_cluster_info[workload_item.1].ingress_domain }}"
+    label: "{{ workload_item.name }}"

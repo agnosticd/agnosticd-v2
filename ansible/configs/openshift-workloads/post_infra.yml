@@ -8,3 +8,10 @@
   - name: Print stage message
     ansible.builtin.debug:
       msg: "Step 002 Post-Infrastructure"
+
+  - name: Add bastion host
+    when:
+    - bastion_ansible_host is defined
+    - bastion_ansible_user is defined
+    ansible.builtin.include_role:
+      name: infra_add_bastion

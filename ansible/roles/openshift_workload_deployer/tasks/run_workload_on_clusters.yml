@@ -1,0 +1,16 @@
+---
+- name: Deploy workload {{ workload_item.name }} to clusters
+  ansible.builtin.include_role:
+    name: "{{ workload_item.name }}"
+    apply:
+      environment:
+        K8S_AUTH_HOST: "{{ _cluster_configs[_cluster_name].api_url }}"
+        K8S_AUTH_API_KEY: "{{ _cluster_configs[_cluster_name].api_token }}"
+        K8S_AUTH_VERIFY_SSL: false
+  loop: "{{ workload_item.clusters | default(['default']) }}"
+  loop_control:
+    loop_var: _cluster_name
+  vars:
+    openshift_api_url: "{{ _openshift_workload_deployer_cluster_info[_cluster_name].api_url }}"
+    openshift_console_url: "{{ _openshift_workload_deployer_cluster_info[_cluster_name].console_url }}"
+    openshift_cluster_ingress_domain: "{{ _openshift_workload_deployer_cluster_info[_cluster_name].ingress_domain }}"

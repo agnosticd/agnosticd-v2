@@ -48,6 +48,9 @@
       api_key: "{{ k8s_auth_results.k8s_auth.api_key | default(sandbox_openshift_api_key) }}"
       validate_certs: false
   block:
+  - name: Check if the quota in the namespace allows install OCP
+    ansible.builtin.include_tasks: check_namespace_quota.yaml
+      
   - name: Configure a SNO/Compact cluster
     when: worker_instance_count | int == 0
     ansible.builtin.include_tasks: configure_sno_compact_cluster.yml

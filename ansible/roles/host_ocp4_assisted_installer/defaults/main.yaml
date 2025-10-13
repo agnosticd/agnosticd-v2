@@ -20,6 +20,8 @@ ai_configure_hosts: []
 # Control plane
 ai_control_plane_cores: 8
 ai_control_plane_memory: 16Gi
+ai_control_plane_root_disk_size: 100Gi
+ai_control_plane_etcd_disk_size: 8Gi
 ai_control_plane_extra_disks: []
 ai_control_plane_macs: []
 ai_control_plane_macs2: []
@@ -30,6 +32,7 @@ ai_ocp_vmname_control_plane_prefix: "control-plane-{{ cluster_name }}"
 # Workers
 ai_workers_cores: 16
 ai_workers_memory: 64Gi
+ai_workers_root_disk_size: 100Gi
 ai_workers_extra_disks: []
 ai_workers_macs: []
 ai_workers_macs2: []

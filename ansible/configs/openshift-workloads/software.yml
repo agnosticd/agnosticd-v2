@@ -1,7 +1,6 @@
 ---
 - name: Step 004 Software
   hosts: localhost
-  connection: local
   become: false
   gather_facts: false
   tasks:

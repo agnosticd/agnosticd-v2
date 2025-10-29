@@ -1,0 +1,48 @@
+---
+- name: Step 001 infra
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Entering the test-empty-config infra.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config infra.yml
+
+  - name: Fail the test-empty-config infra.yml if requested
+    when: >-
+      fail_infra | bool or
+      fail_infra_percentage | int > 100 | ansible.builtin.random
+    ansible.builtin.fail:
+      msg: infra.yml failed as requested
+
+  - name: Include AWS dry-run read-only role
+    when: cloud_provider == 'aws'
+    ansible.builtin.include_role:
+      name: agnosticd.cloud_provider_aws.dry-run
+
+  - name: Add testhosts
+    vars:
+      testhost_name: testhost{{ testhost_num }}
+    ansible.builtin.add_host:
+      name: "{{ testhost_name }}"
+      ansible_become: false
+      ansible_connection: local
+      groups: testhosts
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      test_empty_config_host_data_size: "{{ test_empty_config_host_data_size }}"
+    loop: >-
+      {{ range(0, test_empty_config_host_count|int) }}
+    loop_control:
+      loop_var: testhost_num
+      label: "{{ testhost_name }}"
+
+- name: End step 001 infra
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Exiting the test-empty-config infra.yml
+    ansible.builtin.debug:
+      msg: Exiting the test-empty-config infra.yml
+...

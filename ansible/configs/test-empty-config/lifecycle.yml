@@ -1,0 +1,23 @@
+- name: Step lifecycle
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Fail on start if requested
+    when:
+    - ACTION == 'start'
+    - fail_on_start | bool
+    ansible.builtin.fail:
+      msg: fail on lifecycle start as requested
+
+  - name: Fail on stop if requested
+    when:
+    - ACTION == 'stop'
+    - fail_on_stop | bool
+    ansible.builtin.fail:
+      msg: fail on lifecycle stop as requested
+
+  - name: Include AWS dry-run read-only role
+    when: cloud_provider == 'aws'
+    ansible.builtin.include_role:
+      name: agnosticd.cloud_provider_aws.dry-run

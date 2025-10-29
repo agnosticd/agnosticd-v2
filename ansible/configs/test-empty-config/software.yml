@@ -1,0 +1,25 @@
+---
+- name: Step 004 Software
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Entering the test-empty-config software.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config software.yml
+
+  - name: Fail the test-empty-config software.yml if requested
+    when: fail_software | bool
+    ansible.builtin.fail:
+      msg: software.yml failed as requested
+
+  - name: Exiting the test-empty-config software.yml
+    ansible.builtin.debug:
+      msg: Exiting the test-empty-config software.yml
+
+  - name: Test agnosticd_user_info with GUID message and data
+    agnosticd.core.agnosticd_user_info:
+      msg: GUID is {{ guid }}
+      data:
+        GUID: "{{ guid }}"
+...

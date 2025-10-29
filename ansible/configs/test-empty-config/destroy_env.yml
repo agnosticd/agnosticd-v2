@@ -1,0 +1,24 @@
+---
+- name: Destroy playbook
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Entering the test-empty-config destroy.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config destroy.yml
+
+  - name: Pause destroy
+    when: pause_destroy | default(false) | bool
+    ansible.builtin.pause:
+      seconds: 30
+
+  - name: Include AWS dry-run read-only role
+    when: cloud_provider == 'aws'
+    ansible.builtin.include_role:
+      name: agnosticd.cloud_provider_aws.dry-run
+
+  - name: Exiting the test-empty-config destroy.yml
+    debug:
+      msg: Exiting the test-empty-config destroy.yml
+...

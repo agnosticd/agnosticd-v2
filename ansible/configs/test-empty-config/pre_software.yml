@@ -1,0 +1,19 @@
+---
+- name: Step 003 Pre Software
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+  - name: Entering the test-empty-config pre_software.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config pre_software.yml
+
+  - name: Fail the test-empty-config pre_software.yml if requested
+    when: fail_pre_software | bool
+    ansible.builtin.fail:
+      msg: pre_software.yml failed as requested
+
+  - name: Exiting the test-empty-config pre_software.yml
+    ansible.builtin.debug:
+      msg: Exiting the test-empty-config pre_software.yml
+...

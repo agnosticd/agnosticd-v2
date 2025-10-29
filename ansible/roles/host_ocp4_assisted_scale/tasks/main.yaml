@@ -89,7 +89,7 @@
       wait_timeout: 300
     vars:
       image_url: "{{ newinfraenv.result.download_url }}"
-      namespace: "{{ ai_ocp_namespace }}"
+      sandbox_namespace: "{{ ai_ocp_namespace }}"
       pvcname: scale-iso
 
   - name: Create a {{ worker_instance_count }} worker VMs for full cluster
@@ -97,7 +97,7 @@
     vars:
       pvcinstall: scale-iso
       vmname: "{{ ai_ocp_vmname_worker_prefix }}-{{ _index + current_instance_workers | int }}"
-      namespace: "{{ ai_ocp_namespace }}"
+      sandbox_namespace: "{{ ai_ocp_namespace }}"
       storageclass: "{{ ai_storage_class }}"
       network: "{{ cluster_name }}-openshift"
       network_name: "{{ ai_install_use_network | default(cluster_name + '-openshift') }}"

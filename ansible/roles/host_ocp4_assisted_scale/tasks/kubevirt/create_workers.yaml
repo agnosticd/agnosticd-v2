@@ -86,7 +86,7 @@
     api_key: "{{ k8s_auth_results.k8s_auth.api_key | default(sandbox_openshift_api_key) }}"
     validate_certs: false
     name: "{{ vmname }}"
-    namespace: "{{ namespace }}"
+    namespace: "{{ sandbox_namespace }}"
     data_volume_templates: "{{ _datavolume + (ai_workers_extra_disks | default([]) | to_json | replace('INSTANCENAME', vmname) | from_json ) }}"
     running: true
     wait: false
@@ -104,7 +104,7 @@
           source:
             pvc:
               name: "{{ pvcinstall }}"
-              namespace: "{{ namespace }}"
+              namespace: "{{ sandbox_namespace }}"
           storage:
             resources:
               requests:
@@ -157,7 +157,7 @@
     validate_certs: false
     kind: VirtualMachine
     name: "{{ vmname }}"
-    namespace: "{{ namespace }}"
+    namespace: "{{ sandbox_namespace }}"
   register: r_vm_status
   until: r_vm_status.resources[0].status.printableStatus|default('') == "Running"
   retries: 30

@@ -3,7 +3,7 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: {{ pvcname  }}
-  namespace: {{ namespace }}
+  namespace: {{ sandbox_namespace }}
   annotations:
     cdi.kubevirt.io/storage.deleteAfterCompletion: "false"
 spec:

@@ -60,7 +60,7 @@
       register: r_check_image_set
 
     - name: Fail if version not available
-      when:r_check_image_set.resources | default([]) | length == 0 
+      when: r_check_image_set.resources | default([]) | length == 0 
       ansible.builtin.fail:
         msg: "Version {{ hcp_cluster_version }} not available"
 

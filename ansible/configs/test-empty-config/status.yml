@@ -1,10 +1,9 @@
 ---
 - hosts: localhost
-  connection: local
   gather_facts: false
   tasks:
   - name: Report status data in user info
-    agnosticd_user_info:
+    agnosticd.core.agnosticd_user_info:
       data:
         instances:
         - name: fake-server
@@ -12,7 +11,7 @@
           type: fake-type
 
   - name: Report status messages in user info
-    agnosticd_user_info:
+    agnosticd.core.agnosticd_user_info:
       msg: |-
         {{ "%-60s %-10s %s" | format("Instance", "State", "Type") }}
         ----------------------------------------------------------------

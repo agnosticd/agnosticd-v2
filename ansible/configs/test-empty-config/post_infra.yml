@@ -1,30 +1,24 @@
 ---
 - name: Step 002 Post Infrastructure
   hosts: localhost
-  connection: local
   become: false
   gather_facts: false
-  tags:
-    - step002
-    - post_infrastructure
   tasks:
+  - name: Entering the test-empty-config post_infra.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config post_infra.yml
 
-    - name: Entering the test-empty-config post_infra.yml
-      debug:
-        msg:
-          - Entering the test-empty-config post_infra.yml
+  - name: Fail the test-empty-config post_infra.yml if requested
+    when: fail_post_infra | bool
+    ansible.builtin.fail:
+      msg: post_infra.yml failed as requested
 
-    - when: fail_post_infra | bool
-      name: Fail the test-empty-config post_infra.yml if requested
-      fail:
-        msg: post_infra.yml failed as requested
+  - name: Exiting the test-empty-config post_infra.yml
+    ansible.builtin.debug:
+      msg: Exiting the test-empty-config post_infra.yml
 
-    - name: Exiting the test-empty-config post_infra.yml
-      debug:
-        msg:
-          - Exiting the test-empty-config post_infra.yml
-
-    # Sandbox API for OcpSandbox
-    - when: sandbox_openshift_namespace | default('') != ''
-      include_tasks: sandbox_openshift.yml
+  # Sandbox API for OcpSandbox
+  - name: Include sandbox api tasks
+    when: sandbox_openshift_namespace | default('') != ''
+    ansible.builtin.include_tasks: sandbox_openshift.yml
 ...

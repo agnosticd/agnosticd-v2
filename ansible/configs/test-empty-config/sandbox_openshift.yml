@@ -1,6 +1,6 @@
 ---
 - name: Return user data of the OcpSandbox
-  agnosticd_user_info:
+  agnosticd.core.agnosticd_user_info:
     data:
       openshift_namespace: "{{ sandbox_openshift_namespace }}"
       openshift_cluster: "{{ sandbox_openshift_cluster }}"

@@ -1,32 +1,26 @@
 ---
 - name: Step 005 Post Software
   hosts: localhost
-  connection: local
   become: false
   gather_facts: false
-  tags:
-  - step005
-  - post_software
   tasks:
-
   - name: Entering the test-empty-config post_software.yml
-    debug:
-      msg:
-      - Entering the test-empty-config post_software.yml
+    ansible.builtin.debug:
+      msg: Entering the test-empty-config post_software.yml
 
-  - when: fail_post_software | bool
-    name: Fail the test-empty-config post_software.yml if requested
-    fail:
+  - name: Fail the test-empty-config post_software.yml if requested
+    when: fail_post_software | bool
+    ansible.builtin.fail:
       msg: post_software.yml failed as requested
 
   - name: Pause post-software
     when: test_empty_config_pause_post_software | default(pause_post_software) | default(false) | bool
-    pause:
+    ansible.builtin.pause:
       seconds: "{{ test_empty_config_pause_post_software_seconds | default(30) }}"
 
   - name: Test agnosticd_user_info from post_software with random string
     when: test_empty_config_passthrough_user_data is undefined
-    agnosticd_user_info:
+    agnosticd.core.agnosticd_user_info:
       msg: Some random string {{ random_string }}
       data:
         random_string: "{{ random_string }}"
@@ -36,17 +30,18 @@
 
   - name: Pass-through agnosticd_user_info data
     when: test_empty_config_passthrough_user_data is defined
-    agnosticd_user_info:
+    agnosticd.core.agnosticd_user_info:
       data: >-
        {{ test_empty_config_passthrough_user_data | from_yaml
        if test_empty_config_passthrough_user_data is string
        else test_empty_config_passthrough_user_data }}
 
-  - when: test_empty_config_multi_user | bool
+  - name: Test multi-user
+    when: test_empty_config_multi_user | bool
     block:
     - name: Test set agnosticd_user_info for users
       when: test_empty_config_passthrough_per_user_data is undefined
-      agnosticd_user_info:
+      agnosticd.core.agnosticd_user_info:
         user: student{{ n }}
         msg: student{{ n }} password is {{ random_string }}
         data:
@@ -60,7 +55,7 @@
 
     - name: Pass-through agnosticd_user_info data for users
       when: test_empty_config_passthrough_per_user_data is defined
-      agnosticd_user_info:
+      agnosticd.core.agnosticd_user_info:
         user: student{{ n }}
         data: >-
          {{ test_empty_config_passthrough_per_user_data | from_yaml
@@ -71,7 +66,7 @@
         loop_var: n
 
     - name: Test add agnosticd_user_info for users
-      agnosticd_user_info:
+      agnosticd.core.agnosticd_user_info:
         user: student{{ n }}
         data:
           dns_domain: student{{ n }}.example.com
@@ -81,7 +76,7 @@
 
   - when: test_empty_config_multiline_secret is defined
     name: Ensure the multiline variable passed as secret is multiline
-    assert:
+    ansible.builtin.assert:
       that: test_empty_config_multiline_secret.rstrip().split('\n') | length > 1
       msg: Multiline secret is not multiline
 
@@ -112,19 +107,10 @@
 
 - name: Step 005 Post Software
   hosts: localhost
-  connection: local
   become: false
   gather_facts: false
-  tags:
-  - step005
-  - post_software
   tasks:
-  - name: Print string expected by Cloudforms
-    debug:
-      msg: "Post-Software checks completed successfully"
-
   - name: Exiting the test-empty-config post_software.yml
-    debug:
-      msg:
-      - Exiting the test-empty-config post_software.yml
+    ansible.builtin.debug:
+      msg: Exiting the test-empty-config post_software.yml
 ...

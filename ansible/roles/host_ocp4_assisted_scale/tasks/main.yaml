@@ -46,7 +46,7 @@
   - name: Set base_dns_domain update data
     ansible.builtin.set_fact:
       _update_dns_domain: |-
-        {"base_dns_domain": "{{ openshift_api_url.split(':')[0].split('.')[2:] | join('.') }}"}
+        {"base_dns_domain": "{{ (openshift_api_url | ansible.builtin.urlsplit('hostname')).split('.')[2:] | join('.') }}"}
 
   - name: Update base_dns_domain (workaround for SNO)
     when: current_instance_workers | int == 1

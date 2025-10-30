@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: "{{ svcname }}"
   namespace: {{ ai_ocp_namespace }}
+  annotations:
+    metallb.universe.tf/allow-shared-ip: svc-{{ guid }}
 spec:
   ports:
   - name: api

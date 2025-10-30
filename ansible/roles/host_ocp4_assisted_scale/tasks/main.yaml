@@ -6,8 +6,8 @@
     api_key: "{{ openshift_cluster_admin_token }}"
     validate_certs: false
     kind: Node
-    label_selectors:
-    - "node-role.kubernetes.io/worker="
+    label_selectors: "node-role.kubernetes.io/worker=,!node-role.kubernetes.io/control-plane,!node-role.kubernetes.io/master"
+
   register: _r_node_status
 
 - name: Set variable with the current number of workers

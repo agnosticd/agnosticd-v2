@@ -94,8 +94,7 @@
       vm.kubevirt.io/os: rhel8
     labels:
       kubevirt.io/domain: "{{ vmname }}"
-      # If a cluster is a SNO or compact, the service for API/APPs points to the control-plane role
-      role: "{{ 'control-plane' if current_instance_workers | int == 0 else 'worker' }}"
+      role: "worker"
     spec: "{{ _spec | from_yaml }}"
   vars:
     _datavolume:

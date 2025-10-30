@@ -55,8 +55,8 @@
       name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
       namespace: "{{ ai_ocp_namespace }}"
       api_version: v1
-      patch_type: merge
-      patch: |
+      merge_type: merge
+      resource_definition: |
         spec:
           ports:
             - name: api

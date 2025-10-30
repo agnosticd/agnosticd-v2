@@ -1,5 +1,5 @@
 ---
-- name: Get the current Nodes
+- name: Get the current worker Nodes
   kubernetes.core.k8s_info:
     api_version: v1
     host: "{{ openshift_api_url }}"
@@ -14,7 +14,7 @@
   ansible.builtin.set_fact:
     current_instance_workers: "{{ _r_node_status.resources | length }}"
 
-- name: Get the current Nodes
+- name: Get the current control planes Nodes
   kubernetes.core.k8s_info:
     api_version: v1
     host: "{{ openshift_api_url }}"
@@ -36,6 +36,35 @@
       api_key: "{{ sandbox_openshift_api_key }}"
       validate_certs: false
   block:
+  - name: Add the service (type LoadBalancer) for SNO for workers
+    when: current_instance_workers | int == 0 and current_instance_control_planes == 1
+    vars:
+      svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
+      role: "worker"
+      guid: "{{ guid.split('-')[0] if '-' in guid else guid }}"
+    kubernetes.core.k8s:
+      definition: "{{ lookup('ansible.builtin.template', 'workers_svc.yaml.j2') | from_yaml }}"
+      wait: true
+      wait_timeout: 300
+
+  - name: Keep only 6443 for control plane service
+    when: current_instance_workers | int == 0 and current_instance_control_planes == 1
+    kubernetes.core.k8s:
+      state: patched
+      kind: Service
+      name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
+      namespace: "{{ ai_ocp_namespace }}"
+      api_version: v1
+      patch_type: merge
+      patch: |
+        spec:
+          ports:
+            - name: api
+              port: 6443
+              protocol: TCP
+              targetPort: 6443
+
+  - fail:
   - name: Get a list of clusters
     rhpds.assisted_installer.list_clusters:
       offline_token: "{{ ai_offline_token }}"

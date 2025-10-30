@@ -36,6 +36,26 @@
       api_key: "{{ sandbox_openshift_api_key }}"
       validate_certs: false
   block:
+  - name: Keep only 6443 for control plane service
+    when: current_instance_workers | int == 0 and current_instance_control_planes == 1
+    kubernetes.core.k8s:
+      state: patched
+      kind: Service
+      name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
+      namespace: "{{ ai_ocp_namespace }}"
+      api_version: v1
+      merge_type: merge
+      resource_definition: |
+        metadata:
+          annotations:
+            metallb.universe.tf/allow-shared-ip: "svc-{{ guid }}"
+        spec:
+          ports:
+            - name: api
+              port: 6443
+              protocol: TCP
+              targetPort: 6443
+
   - name: Add the service (type LoadBalancer) for SNO for workers
     when: current_instance_workers | int == 0 and current_instance_control_planes == 1
     vars:
@@ -47,22 +67,7 @@
       wait: true
       wait_timeout: 300
 
-  - name: Keep only 6443 for control plane service
-    when: current_instance_workers | int == 0 and current_instance_control_planes == 1
-    kubernetes.core.k8s:
-      state: patched
-      kind: Service
-      name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
-      namespace: "{{ ai_ocp_namespace }}"
-      api_version: v1
-      merge_type: merge
-      resource_definition: |
-        spec:
-          ports:
-            - name: api
-              port: 6443
-              protocol: TCP
-              targetPort: 6443
+
 
   - fail:
   - name: Get a list of clusters

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    metallb.universe.tf/allow-shared-ip: svc-{{ guid }}
+    metallb.universe.tf/allow-shared-ip: svc-{{ guid.split('-')[0] if '-' in guid else guid }}
   name: {{ svcname }}
   namespace: {{ ai_ocp_namespace }}
 spec:

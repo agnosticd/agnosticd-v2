@@ -46,9 +46,6 @@
       api_version: v1
       merge_type: merge
       resource_definition: |
-        metadata:
-          annotations:
-            metallb.universe.tf/allow-shared-ip: "svc-{{ guid }}"
         spec:
           ports:
             - name: api

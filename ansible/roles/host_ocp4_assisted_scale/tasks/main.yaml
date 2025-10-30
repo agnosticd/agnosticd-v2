@@ -64,9 +64,6 @@
       wait: true
       wait_timeout: 300
 
-
-
-  - fail:
   - name: Get a list of clusters
     rhpds.assisted_installer.list_clusters:
       offline_token: "{{ ai_offline_token }}"

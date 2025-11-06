@@ -36,6 +36,10 @@
     loop:
     - "api"
     - "*.apps"
+    retries: 6
+    delay: 30
+    register: r_dns_cleanup
+    until: r_dns_cleanup is success
 
   - name: Get a list of clusters
     rhpds.assisted_installer.list_clusters:

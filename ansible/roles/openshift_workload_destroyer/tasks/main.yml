@@ -1,0 +1,53 @@
+---
+# OpenShift Workload Destroyer - Optimized for destroy operations
+# This role provides fast, resilient cleanup of workloads across multiple clusters
+# Unlike openshift_workload_deployer, this role skips unnecessary cluster discovery
+# and continues operation even when some clusters are unreachable
+
+- name: Debug workloads and clusters for destroy operation
+  ansible.builtin.debug:
+    msg: |
+      openshift_workload_destroyer_clusters: {{ openshift_workload_destroyer_clusters }}
+      openshift_workload_destroyer_workloads: {{ openshift_workload_destroyer_workloads }}
+
+- name: Initialize destroy operation tracking
+  ansible.builtin.set_fact:
+    _destroy_results: {}
+    _unreachable_clusters: []
+    _successful_destroys: []
+    _failed_destroys: []
+
+- name: Create cluster lookup dictionary for easier access
+  ansible.builtin.set_fact:
+    _cluster_configs: "{{ _cluster_configs | default({}) | combine({item.key: item.value}) }}"
+  loop: "{{ openshift_workload_destroyer_clusters | map('dict2items') | list | flatten }}"
+
+- name: Test cluster connectivity (non-blocking)
+  ansible.builtin.include_tasks: test_cluster_connectivity.yml
+  loop: "{{ openshift_workload_destroyer_clusters | map('dict2items') | list }}"
+  loop_control:
+    loop_var: cluster_pair
+    label: "Testing connectivity to: {{ cluster_pair[0].key }}"
+
+- name: Display connectivity summary
+  ansible.builtin.debug:
+    msg:
+      - "Cluster connectivity summary:"
+      - "Reachable clusters: {{ _destroy_results | dict2items | selectattr('value', 'equalto', true) | map(attribute='key') | list }}"
+      - "Unreachable clusters: {{ _unreachable_clusters }}"
+
+- name: Execute destroy workloads on reachable clusters
+  ansible.builtin.include_tasks: destroy_workload_on_cluster.yml
+  loop: "{{ openshift_workload_destroyer_workloads }}"
+  loop_control:
+    loop_var: workload_item
+    label: "Destroying workload: {{ workload_item.name }}"
+
+- name: Display destroy operation summary
+  ansible.builtin.debug:
+    msg:
+      - "=== DESTROY OPERATION SUMMARY ==="
+      - "Successful destroys: {{ _successful_destroys }}"
+      - "Failed destroys: {{ _failed_destroys }}"
+      - "Unreachable clusters (skipped): {{ _unreachable_clusters }}"
+      - "Operation completed - check logs above for details"

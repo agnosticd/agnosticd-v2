@@ -26,11 +26,11 @@
     ansible.builtin.set_fact:
       _workloads: "{{ remove_workloads }}"
 
-  - name: Destroy Workloads on cluster(s)
+  - name: Destroy Workloads on cluster(s) using optimized destroyer role
     when: remove_workloads | length > 0
     ansible.builtin.include_role:
-      name: openshift_workload_deployer
+      name: openshift_workload_destroyer
     vars:
       ACTION: destroy
-      openshift_workload_deployer_workloads: "{{ _workloads }}"
-      openshift_workload_deployer_clusters: "{{ clusters }}"
+      openshift_workload_destroyer_workloads: "{{ _workloads }}"
+      openshift_workload_destroyer_clusters: "{{ clusters }}"

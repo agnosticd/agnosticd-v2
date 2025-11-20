@@ -20,6 +20,8 @@
     retries: 30
     delay: 5
     until:
+    - r_console is success
+    - r_console.resources is defined
     - r_console.resources | length > 0
     - r_console.resources[0].status is defined
     - r_console.resources[0].status.consoleURL is defined
@@ -34,6 +36,8 @@
     retries: 30
     delay: 5
     until:
+    - r_api is success
+    - r_api.resources is defined
     - r_api.resources | length > 0
     - r_api.resources[0].status is defined
     - r_api.resources[0].status.apiServerURL is defined
@@ -48,6 +52,8 @@
     retries: 30
     delay: 5
     until:
+    - r_ingress is success
+    - r_ingress.resources is defined
     - r_ingress.resources | length > 0
     - r_ingress.resources[0].spec.domain is defined
     - r_ingress.resources[0].spec.domain | length > 0

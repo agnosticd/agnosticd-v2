@@ -1,0 +1,44 @@
+---
+# OpenShift Workload Destroyer - Default Variables
+# This role is optimized for fast, resilient destroy operations
+
+# List of Clusters with credentials
+# A cluster with name `default` is used when no target clusters are specified for workloads
+# openshift_workload_destroyer_clusters:
+# - openshift_app:
+#     api_url: https://api.app-cluster.example.com:6443
+#     api_token: sha256~abc123...
+#
+# - openshift_db:
+#     api_url: https://api.db-cluster.example.com:6443
+#     api_token: sha256~def456...
+
+openshift_workload_destroyer_clusters:
+- default:
+    api_url: "<FROM SECRET>"
+    api_token: "<FROM SECRET>"
+
+# List of workloads to destroy on clusters with cluster selector
+#
+# If no clusters are specified then the default cluster is used.
+# If clusters are specified cluster names must match a cluster in the list of clusters
+#
+# openshift_workload_destroyer_workloads:
+# - name: agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
+#   clusters:
+#   - openshift_app
+#   - openshift_db
+# - name: rhpds.mitzi.ocp4_workload_mitzi_app
+#   clusters:
+#   - openshift_app
+# - name: rhpds.mitzi.ocp4_workload_mitzi_db
+#   clusters:
+#   - openshift_db
+#
+# Simple example (all workloads destroyed on the default cluster):
+# openshift_workload_destroyer_workloads:
+# - name: agnosticd.core_workloads.ocp4_workload_authentication_htpasswd
+# - name: rhpds.mitzi.ocp4_workload_mitzi_app
+# - name: rhpds.mitzi.ocp4_workload_mitzi_db
+
+openshift_workload_destroyer_workloads: []

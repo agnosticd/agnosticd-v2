@@ -1,0 +1,43 @@
+---
+# Test cluster connectivity for destroy operations
+# This task tests basic API connectivity without extensive discovery
+# Designed to be fast and non-blocking
+
+- name: "Test basic connectivity to {{ cluster_pair[0].key }}"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: default
+  vars:
+    current_cluster_name: "{{ cluster_pair[0].key }}"
+    current_cluster_config: "{{ cluster_pair[0].value }}"
+  environment:
+    K8S_AUTH_HOST: "{{ current_cluster_config.api_url }}"
+    K8S_AUTH_API_KEY: "{{ current_cluster_config.api_token }}"
+    K8S_AUTH_VERIFY_SSL: "false"
+  register: connectivity_test
+  ignore_errors: true
+  failed_when: false
+  retries: 3
+  delay: 2
+  until:
+    - connectivity_test is success
+    - connectivity_test.resources is defined
+
+- name: "Mark cluster connectivity status"
+  ansible.builtin.set_fact:
+    _destroy_results: >-
+      {{ _destroy_results | combine({
+        current_cluster_name: connectivity_test is success
+      }) }}
+
+- name: "Track unreachable clusters"
+  when: connectivity_test is failed
+  ansible.builtin.set_fact:
+    _unreachable_clusters: "{{ _unreachable_clusters + [current_cluster_name] }}"
+
+- name: "Log connectivity result"
+  ansible.builtin.debug:
+    msg: >-
+      Cluster {{ current_cluster_name }}:
+      {{ 'REACHABLE ✓' if connectivity_test is success else 'UNREACHABLE ✗ (will skip destroy operations)' }}

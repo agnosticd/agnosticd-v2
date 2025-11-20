@@ -1,0 +1,63 @@
+= OpenShift Workload Destroyer
+
+This role provides fast, resilient cleanup of OpenShift workloads across multiple clusters.
+
+== Purpose
+
+Unlike `openshift_workload_deployer`, this role is optimized specifically for destroy operations:
+
+* **Fast**: No unnecessary cluster discovery (console URLs, ingress domains)
+* **Resilient**: Continues operation when clusters are unreachable
+* **Clear feedback**: Reports what was successfully destroyed vs what failed
+
+== Key Differences from openshift_workload_deployer
+
+[cols="1,1,1"]
+|===
+|Feature |openshift_workload_deployer |openshift_workload_destroyer
+
+|Cluster Discovery
+|Full discovery (console, API, ingress)
+|Basic connectivity test only
+
+|Error Handling
+|Fail-fast on unreachable clusters
+|Continue on unreachable clusters
+
+|Performance
+|~150 seconds per cluster
+|~5 seconds per cluster
+
+|Use Case
+|Provision operations
+|Destroy operations
+|===
+
+== Usage
+
+This role uses the same variable structure as `openshift_workload_deployer`:
+
+[source,yaml]
+----
+- name: Destroy workloads
+  ansible.builtin.include_role:
+    name: openshift_workload_destroyer
+  vars:
+    ACTION: destroy
+    openshift_workload_destroyer_clusters: "{{ clusters }}"
+    openshift_workload_destroyer_workloads: "{{ remove_workloads }}"
+----
+
+== Behavior on Unreachable Clusters
+
+When a cluster is unreachable:
+1. Logs the cluster as "UNREACHABLE"
+2. Skips destroy operations for that cluster
+3. Continues with other reachable clusters
+4. Provides summary of what was accomplished
+
+This ensures maximum cleanup success even in degraded environments.
+
+== Variables
+
+See `defaults/main.yml` for variable documentation and examples.

@@ -1,0 +1,47 @@
+---
+# Execute destroy operations for workloads on reachable clusters only
+# This task skips unreachable clusters and continues on individual workload failures
+
+- name: "Destroy {{ workload_item.name }} on reachable clusters"
+  ansible.builtin.include_role:
+    name: "{{ workload_item.name }}"
+    apply:
+      environment:
+        K8S_AUTH_HOST: "{{ _cluster_configs[_cluster_name].api_url }}"
+        K8S_AUTH_API_KEY: "{{ _cluster_configs[_cluster_name].api_token }}"
+        K8S_AUTH_VERIFY_SSL: "false"
+  loop: "{{ workload_item.clusters | default(['default']) }}"
+  loop_control:
+    loop_var: _cluster_name
+    label: "{{ workload_item.name }} on {{ _cluster_name }}"
+  when:
+    - _destroy_results[_cluster_name] is defined
+    - _destroy_results[_cluster_name] | bool
+  vars:
+    ACTION: destroy
+  ignore_errors: true
+  register: workload_destroy_result
+
+- name: "Process destroy results for {{ workload_item.name }}"
+  ansible.builtin.set_fact:
+    _successful_destroys: >-
+      {{ _successful_destroys + [workload_item.name + ' on ' + item.item] }}
+  loop: "{{ workload_destroy_result.results | default([]) }}"
+  when:
+    - item is defined
+    - item is not skipped
+    - item is success
+  loop_control:
+    label: "{{ workload_item.name }} on {{ item.item | default('unknown') }}"
+
+- name: "Track failed destroy operations for {{ workload_item.name }}"
+  ansible.builtin.set_fact:
+    _failed_destroys: >-
+      {{ _failed_destroys + [workload_item.name + ' on ' + item.item + ' (ERROR: ' + (item.msg | default('Unknown error')) + ')'] }}
+  loop: "{{ workload_destroy_result.results | default([]) }}"
+  when:
+    - item is defined
+    - item is not skipped
+    - item is failed
+  loop_control:
+    label: "{{ workload_item.name }} on {{ item.item | default('unknown') }}"

@@ -4,11 +4,11 @@
 # Unlike openshift_workload_deployer, this role skips unnecessary cluster discovery
 # and continues operation even when some clusters are unreachable
 
-- name: Debug workloads and clusters for destroy operation
-  ansible.builtin.debug:
-    msg: |
-      openshift_workload_destroyer_clusters: {{ openshift_workload_destroyer_clusters }}
-      openshift_workload_destroyer_workloads: {{ openshift_workload_destroyer_workloads }}
+#- name: Debug workloads and clusters for destroy operation
+#  ansible.builtin.debug:
+#    msg: |
+#     openshift_workload_destroyer_clusters: {{ openshift_workload_destroyer_clusters }}
+#     openshift_workload_destroyer_workloads: {{ openshift_workload_destroyer_workloads }}
 
 - name: Initialize destroy operation tracking
   ansible.builtin.set_fact:
@@ -21,6 +21,8 @@
   ansible.builtin.set_fact:
     _cluster_configs: "{{ _cluster_configs | default({}) | combine({item.key: item.value}) }}"
   loop: "{{ openshift_workload_destroyer_clusters | map('dict2items') | list | flatten }}"
+  loop_control:
+    label: "{{ item.key }}"
 
 - name: Test cluster connectivity (non-blocking)
   ansible.builtin.include_tasks: test_cluster_connectivity.yml

@@ -10,23 +10,18 @@
     ansible.builtin.fail:
       msg: "remove_workloads variable is either not defined or is not a list"
 
-  - name: Check if workloads is a simple list (no 'clusters' key)
-    ansible.builtin.set_fact:
-      _workloads_simple_format: >-
-        {{ (remove_workloads | length > 0) and (remove_workloads[0].clusters is not defined) }}
-
-  - name: Convert simple format to complex format
-    when: _workloads_simple_format
+  - name: Set workloads to remove in standard format
+    loop: "{{ remove_workloads }}"
+    loop_control:
+      label: "{{ _workload.name }} on {{ _clusters | join(',') }}"
+    vars:
+      _workload: "{{ item if item is mapping else {'name': item} }}"
+      _clusters: "{{ _workload.clusters | default(['default']) }}"
     ansible.builtin.set_fact:
       _workloads: >-
-        {{ remove_workloads | json_query("[].{name: @, clusters: ['default']}") }}
+        {{ _workloads | default([]) + [_workload | combine({"clusters": _clusters})] }}
 
-  - name: Set workloads (if already in complex format)
-    when: not _workloads_simple_format
-    ansible.builtin.set_fact:
-      _workloads: "{{ remove_workloads }}"
-
-  - name: Destroy Workloads on cluster(s) using optimized destroyer role
+  - name: Destroy remove_workloads on cluster(s) using optimized destroyer role
     when: remove_workloads | length > 0
     ansible.builtin.include_role:
       name: openshift_workload_destroyer

@@ -11,18 +11,15 @@
 
 # List of Clusters with credentials
 # A cluster with name `default` is used when no target clusters are specified for the individual workloads
-# clusters
-# - openshift_app:
+# clusters:
+#   openshift_app:
 #     api_url: ...
 #     api_token: ...
 #
-# - openshift_db:
+#   openshift_db:
 #     api_url: ...
 #     api_token: ...
-clusters:
-- default:
-    api_url: "<FROM SECRET>"
-    api_token: "<FROM SECRET>"
+clusters: {}
 
 # List of workloads to apply to clusters with cluster selector
 #

@@ -9,21 +9,16 @@
     ansible.builtin.fail:
       msg: "Workloads variable is either not defined or is not a list"
 
-  - name: Check if workloads is a simple list (no 'clusters' key)
-    ansible.builtin.set_fact:
-      _workloads_simple_format: >-
-        {{ (workloads | length > 0) and (not workloads[0] is mapping) }}
-
-  - name: Convert simple format to complex format
-    when: _workloads_simple_format | bool
+  - name: Set workloads to provision in standard format
+    loop: "{{ workloads }}"
+    loop_control:
+      label: "{{ _workload.name }} on {{ _clusters | join(',') }}"
+    vars:
+      _workload: "{{ item if item is mapping else {'name': item} }}"
+      _clusters: "{{ _workload.clusters | default(['default']) }}"
     ansible.builtin.set_fact:
       _workloads: >-
-        {{ workloads | json_query("[].{name: @, clusters: ['default']}") }}
-
-  - name: Use passed workloads (not simple sequence)
-    when: not _workloads_simple_format | bool
-    ansible.builtin.set_fact:
-      _workloads: "{{ workloads }}"
+        {{ _workloads | default([]) + [_workload | combine({"clusters": _clusters})] }}
 
   - name: Provision Workloads on cluster(s)
     ansible.builtin.include_role:

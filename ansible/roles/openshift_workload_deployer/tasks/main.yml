@@ -4,30 +4,32 @@
     msg: |
       openshift_workload_deployer_clusters: {{ openshift_workload_deployer_clusters }}
       openshift_workload_deployer_workloads: {{ openshift_workload_deployer_workloads }}
-    # verbosity: 2
+    verbosity: 2
 
-- name: Create cluster lookup dictionary for easier access
+- name: Set cluster configs from openshift_workload_deployer_clusters dictionary
+  when: openshift_workload_deployer_clusters is mapping
+  ansible.builtin.set_fact:
+    _cluster_configs: "{{ openshift_workload_deployer_clusters }}"
+
+- name: Convert deprecated list format for openshift_workload_deployer_clusters
   ansible.builtin.set_fact:
     _cluster_configs: "{{ _cluster_configs | default({}) | combine({item.key: item.value}) }}"
-  loop: "{{ openshift_workload_deployer_clusters | map('dict2items') | list | flatten }}"
-
-- name: Debug dictionary
-  ansible.builtin.debug:
-    var: _cluster_configs
-
-- name: Debug list
-  ansible.builtin.debug:
-    var: openshift_workload_deployer_clusters | map('dict2items') | list
+  loop: >-
+    {{ [] if openshift_workload_deployer_clusters is mapping else
+       (openshift_workload_deployer_clusters | map('dict2items') | list | flatten)
+    }}
+  loop_control:
+    label: "{{ item.key }}"
 
 - name: Get cluster information for each cluster
   ansible.builtin.include_tasks: get_cluster_info.yml
-  loop: "{{ openshift_workload_deployer_clusters | map('dict2items') | list }}"
+  loop: "{{ _cluster_configs | dict2items }}"
   loop_control:
     loop_var: cluster_pair
-    label: "Getting info for cluster: {{ cluster_pair[0].key }}"
+    label: "Getting info for cluster: {{ current_cluster_name }}"
   vars:
-    current_cluster_name: "{{ cluster_pair[0].key }}"
-    current_cluster_config: "{{ cluster_pair[0].value }}"
+    current_cluster_name: "{{ cluster_pair.key }}"
+    current_cluster_config: "{{ cluster_pair.value }}"
     current_cluster_k8s_auth_host: "{{ current_cluster_config.api_url }}"
     current_cluster_k8s_auth_api_key: "{{ current_cluster_config.api_token }}"
     current_cluster_k8s_auth_verify_ssl: false

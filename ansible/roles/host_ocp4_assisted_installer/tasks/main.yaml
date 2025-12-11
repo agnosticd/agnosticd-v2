@@ -124,7 +124,7 @@
       folder: openshift
 
   - name: Add node hint manifest for SNO
-    when: control_plane_instance_count  == 1
+    when: control_plane_instance_count | int == 1
     rhpds.assisted_installer.create_manifest:
       cluster_id: "{{ newcluster.result.id }}"
       offline_token: "{{ ai_offline_token }}"

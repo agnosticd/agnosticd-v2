@@ -1,9 +1,18 @@
 ---
-- name: Add the service (type LoadBalancer) for SNO/Compact
+- name: Add the service (type LoadBalancer) for control plane
   vars:
     svcname: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
   kubernetes.core.k8s:
-    template: sno_compact_svc.yaml.j2
+    definition: "{{ lookup('ansible.builtin.template', 'control_plane_svc.yaml.j2') | from_yaml }}"
+    wait: true
+    wait_timeout: 300
+
+- name: Add the service (type LoadBalancer) for workers
+  vars:
+    svcname: "{{ ai_ocp_vmname_worker_prefix }}-svc"
+    role: "control-plane"
+  kubernetes.core.k8s:
+    definition: "{{ lookup('ansible.builtin.template', 'workers_svc.yaml.j2') | from_yaml }}"
     wait: true
     wait_timeout: 300
 
@@ -13,8 +22,8 @@
     kind: Service
     name: "{{ ai_ocp_vmname_control_plane_prefix }}-svc"
     namespace: "{{ ai_ocp_namespace }}"
-  register: full_svc_control_plane
-  until: full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
+  register: r_svc_control_plane
+  until: r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
   retries: 10
   delay: 2
 
@@ -26,7 +35,7 @@
     hosted_zone_id: "{{ route53_aws_zone_id }}"
     record: "api.{{ cluster_name}}.{{ cluster_dns_zone }}"
     zone: "{{ cluster_dns_zone  }}"
-    value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
     type: A
   register: r_route53_add_record
   until: r_route53_add_record is success
@@ -56,7 +65,7 @@
     hosted_zone_id: "{{ route53_aws_zone_id }}"
     record: "*.apps.{{ cluster_name}}.{{ cluster_dns_zone }}"
     zone: "{{ cluster_dns_zone  }}"
-    value: "{{ full_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
     type: A
   register: r_route53_add_record
   until: r_route53_add_record is success

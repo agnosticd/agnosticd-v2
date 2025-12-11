@@ -1,5 +1,5 @@
 ---
-- name: Get the current Nodes
+- name: Get the current workers
   kubernetes.core.k8s_info:
     api_version: v1
     host: "{{ openshift_api_url }}"
@@ -14,7 +14,7 @@
   ansible.builtin.set_fact:
     current_instance_workers: "{{ _r_node_status.resources | length }}"
 
-- name: Get the current Nodes
+- name: Get the current control planes
   kubernetes.core.k8s_info:
     api_version: v1
     host: "{{ openshift_api_url }}"
@@ -28,7 +28,6 @@
   ansible.builtin.set_fact:
     current_instance_control_planes: "{{ _r_node_status.resources | length }}"
 
-
 - name: Scale OCP using Assisted Installer
   module_defaults:
     group/k8s:
@@ -36,6 +35,21 @@
       api_key: "{{ sandbox_openshift_api_key }}"
       validate_certs: false
   block:
+
+  - name: Update worker SVC to point role worker
+    when: current_instance_workers | int == 0 
+    kubernetes.core.k8s:
+      state: patched
+      kind: Service
+      name: "{{ ai_ocp_vmname_worker_prefix }}-svc"
+      namespace: "{{ ai_ocp_namespace }}"
+      api_version: v1
+      merge_type: merge
+      resource_definition: |
+        spec:
+          selector:
+            role: worker
+
   - name: Get a list of clusters
     rhpds.assisted_installer.list_clusters:
       offline_token: "{{ ai_offline_token }}"

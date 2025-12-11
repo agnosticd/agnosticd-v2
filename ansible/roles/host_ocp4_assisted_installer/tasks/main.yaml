@@ -123,6 +123,15 @@
       file_name: 98_sysctl-control-plane.yaml
       folder: openshift
 
+  - name: Add node hint manifest for SNO
+    when: control_plane_instance_count  == 1
+    rhpds.assisted_installer.create_manifest:
+      cluster_id: "{{ newcluster.result.id }}"
+      offline_token: "{{ ai_offline_token }}"
+      content: "{{lookup('ansible.builtin.file', 'node_hint.yaml') | b64encode }}"
+      file_name: 98_node-hint.yaml
+      folder: openshift
+
   - name: Add MachineConfig manifests to Assisted Installer
     when: ai_machineconfigs | default([]) | length > 0
     rhpds.assisted_installer.create_manifest:

@@ -81,6 +81,25 @@ install_satellite_repositories: true
 # host_satellite_repositories_activationkey:
 
 # -------------------------------------------------
+# Call role host_rhn_repositories
+# -------------------------------------------------
+install_rhn_repositories: false
+
+# These vars are needed and need to come from secrets:
+# host_rhn_repositories_username:
+# host_rhn_repositories_password:
+# host_rhn_repositories_org_id: ""
+# host_rhn_repositories_activationkey: ""
+
+# Optional: Specify a pool to attach (regex pattern matching pool name)
+# host_rhn_repositories_pool: "^Employee SKU$"
+
+# Optional: List of repositories to enable after registration
+# host_rhn_repositories_repos:
+# - rhel-9-for-x86_64-baseos-rpms
+# - rhel-9-for-x86_64-appstream-rpms
+
+# -------------------------------------------------
 # Call role host_common_packages
 # -------------------------------------------------
 # Packages to install on all of the hosts deployed as part of the agnosticd config

@@ -1,0 +1,13 @@
+---
+- name: Run setup if gather_facts hasn't been run
+  when: ansible_date_time is not defined
+  ansible.builtin.setup:
+    gather_subset: min
+
+- name: Register with Red Hat Network
+  when: ACTION == "provision"
+  ansible.builtin.include_tasks: rhn_register.yml
+
+- name: Unregister from subscription manager
+  when: ACTION == "destroy"
+  ansible.builtin.include_tasks: unregister.yml

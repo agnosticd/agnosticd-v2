@@ -1,0 +1,25 @@
+---
+# The following variables need to come from a secret
+# host_rhn_repositories_username: ""
+# host_rhn_repositories_password: ""
+
+# Alternative: Use activation key instead of username/password
+# host_rhn_repositories_org_id: ""
+# host_rhn_repositories_activationkey: ""
+
+# Optional: Specify a pool to attach (regex pattern matching pool name)
+# host_rhn_repositories_pool: "^Employee SKU$"
+
+# Optional: List of repositories to enable after registration
+# host_rhn_repositories_repos:
+#   - rhel-9-for-x86_64-baseos-rpms
+#   - rhel-9-for-x86_64-appstream-rpms
+
+# Optional: Lock to a specific RHEL release
+# host_rhn_repositories_release: "9.3"
+
+# Force re-registration even if already registered
+host_rhn_repositories_force_register: false
+
+# Default action
+ACTION: provision

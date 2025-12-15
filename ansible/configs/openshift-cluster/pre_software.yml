@@ -15,9 +15,12 @@
   become: true
   gather_facts: false
   roles:
-  - name: Set up repositories
+  - name: Set up satellite repositories
     when: install_satellite_repositories | bool
     role: host_satellite_repositories
+  - name: Set up rhn repositories
+    when: install_rhn_repositories | bool
+    role: host_rhn_repositories
 
   - name: Install common packages
     when: install_common_packages | bool

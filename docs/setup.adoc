@@ -92,7 +92,7 @@ sudo dnf -y install git python3 python3-devel gcc oniguruma-devel podman
 
 . Continue with <<common-setup,Common Setup>> steps.
 
-=== Fedora 41 Prerequisites
+=== Fedora 41+ Prerequisites
 
 . *Install prerequisites* (on Fedora 41 and above Python 3.13 is already the default):
 +
@@ -167,6 +167,12 @@ host_satellite_repositories_org: <Your Org Here>
 host_satellite_repositories_activationkey: <Your Activation Key here>
 
 # -------------------------------------------------------------------
+# RHN Repos
+# -------------------------------------------------------------------
+# host_rhn_repositories_username: <Your RHN Username>
+# host_rhn_repositories_password: <Your RHN Password>
+
+# -------------------------------------------------------------------
 # OpenShift Secrets
 # -------------------------------------------------------------------
 ocp4_pull_secret: '<Add Your Pull Secret here>'
@@ -175,6 +181,7 @@ ocp4_pull_secret: '<Add Your Pull Secret here>'
 *Configuration requirements*:
 
 * Replace placeholder values with your actual environment details
+* Either set your satellite credentials or your RHN credentials
 * The `ocp4_pull_secret` is only required for OpenShift deployments
 * Other configurations may require additional variables
 
@@ -265,6 +272,12 @@ host_ssh_authorized_keys:
 # Create a student user on the bastion
 bastion_setup_student_user: true
 bastion_student_user_name: student
+
+# -------------------------------------------------------------------
+# Bastion VM repositories (set credentials accordingly in secrets.yml)
+# -------------------------------------------------------------------
+install_satellite_repositories: true
+install_rhn_repositories: false
 
 # -------------------------------------------------------------------
 # OpenShift Configuration

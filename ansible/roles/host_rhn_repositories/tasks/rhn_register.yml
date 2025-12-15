@@ -1,0 +1,124 @@
+---
+- name: Check subscription-manager package existence
+  when: cloud_provider is defined and (cloud_provider == 'gcp' or cloud_provider == 'azure')
+  ansible.builtin.command: which subscription-manager
+  ignore_errors: true
+  register: check_sm_out
+
+- name: Install subscription-manager package
+  when:
+  - cloud_provider is defined
+  - cloud_provider == 'gcp' or cloud_provider == 'azure'
+  - check_sm_out is failed
+  ansible.builtin.package:
+    name: subscription-manager
+    state: present
+
+- name: Remove rh-amazon-rhui-client package
+  when: cloud_provider is defined and cloud_provider == 'aws'
+  ansible.builtin.package:
+    name: rh-amazon-rhui-client
+    state: absent
+    disablerepo: "*"
+
+- name: Unregister the system just in case
+  ansible.builtin.include_tasks: unregister.yml
+
+- name: Remove existing repository files
+  when: cloud_provider is defined
+  block:
+  - name: Find current repository files
+    ansible.builtin.find:
+      paths: /etc/yum.repos.d
+      recurse: false
+      patterns:
+        - '*.repo'
+    register: r_find_repos
+
+  - name: Remove current repository files
+    ansible.builtin.file:
+      path: "{{ file.path }}"
+      state: absent
+    loop: "{{ r_find_repos.files }}"
+    loop_control:
+      loop_var: file
+      label: "{{ file.path }}"
+    ignore_errors: true
+
+- name: Set host_rhn_repositories_subscription_hostname to provided value
+  when: host_rhn_repositories_subscription_hostname | default("") | length > 0
+  ansible.builtin.set_fact:
+    _host_rhn_repositories_subscription_hostname: "{{ host_rhn_repositories_subscription_hostname }}"
+
+- name: Set host_rhn_repositories_subscription_hostname with randomization
+  when: host_rhn_repositories_subscription_hostname | default("") | length == 0
+  ansible.builtin.set_fact:
+    _host_rhn_repositories_subscription_hostname: >-
+      {%- if guid is defined and guid in inventory_hostname -%}
+      {{ inventory_hostname }}-{{ ansible_date_time.iso8601_basic | lower }}
+      {%- elif guid is defined -%}
+      {{ inventory_hostname }}.{{ guid }}.internal-{{ ansible_date_time.iso8601_basic | lower }}
+      {%- else -%}
+      {{ inventory_hostname }}-{{ ansible_date_time.iso8601_basic | lower }}
+      {%- endif -%}
+
+- name: Register with username and password
+  when:
+  - host_rhn_repositories_username is defined
+  - host_rhn_repositories_password is defined
+  - host_rhn_repositories_activationkey is not defined
+  community.general.redhat_subscription:
+    state: present
+    consumer_name: "{{ _host_rhn_repositories_subscription_hostname }}"
+    username: "{{ host_rhn_repositories_username }}"
+    password: "{{ host_rhn_repositories_password }}"
+    pool: "{{ host_rhn_repositories_pool | default(omit) }}"
+    force_register: "{{ host_rhn_repositories_force_register | bool }}"
+  register: r_rhn_register
+  until: r_rhn_register is succeeded
+  retries: 10
+  delay: 10
+
+- name: Register with activation key
+  when:
+  - host_rhn_repositories_activationkey is defined
+  - host_rhn_repositories_org_id is defined
+  community.general.redhat_subscription:
+    state: present
+    consumer_name: "{{ _host_rhn_repositories_subscription_hostname }}"
+    org_id: "{{ host_rhn_repositories_org_id }}"
+    activationkey: "{{ host_rhn_repositories_activationkey }}"
+    pool: "{{ host_rhn_repositories_pool | default(omit) }}"
+    force_register: "{{ host_rhn_repositories_force_register | bool }}"
+  register: r_rhn_register_ak
+  until: r_rhn_register_ak is succeeded
+  retries: 10
+  delay: 10
+
+- name: Enable RHSM to manage repositories
+  ansible.builtin.command: subscription-manager config --rhsm.manage_repos=1
+
+- name: Lock RHEL release to specific version
+  when:
+  - host_rhn_repositories_release is defined
+  - ansible_os_family == 'RedHat'
+  ansible.builtin.command: subscription-manager release --set={{ host_rhn_repositories_release }}
+  register: lock_result
+  until: lock_result is succeeded
+  retries: 15
+  delay: 10
+
+- name: Disable all repositories
+  when: host_rhn_repositories_repos is defined
+  community.general.rhsm_repository:
+    name: "*"
+    state: disabled
+
+- name: Enable specified repositories
+  when: host_rhn_repositories_repos is defined
+  community.general.rhsm_repository:
+    name: "{{ host_rhn_repositories_repos }}"
+    state: enabled
+
+- name: Clean repositories
+  ansible.builtin.command: "yum clean all"

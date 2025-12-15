@@ -71,7 +71,6 @@ RUN for i in 1 2 3; do \
     ansible-galaxy collection list --collections-path "/usr/share/ansible/collections" || \
     { echo "Failed to install collections after 3 attempts"; exit 1; }
 
-
 # ----------------------------------------------------------------------------------
 # Build Execution Environment image from base & galaxy images
 # ----------------------------------------------------------------------------------

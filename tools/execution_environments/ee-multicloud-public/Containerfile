@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------------
 # Build base image
 # ----------------------------------------------------------------------------------
-ARG EE_BASE_IMAGE="registry.access.redhat.com/ubi9/ubi"
+ARG EE_BASE_IMAGE="registry.access.redhat.com/ubi9/ubi:latest"
 
 # Building base
 FROM $EE_BASE_IMAGE as base
@@ -54,10 +54,10 @@ ARG AAP_VALIDATED_TOKEN=notset
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml
 
-RUN echo --------------------------------------------------
-RUN echo Certified Token: ${AAP_CERTIFIED_TOKEN}
-RUN echo Validated Token: ${AAP_VALIDATED_TOKEN}
-RUN echo --------------------------------------------------
+# RUN echo --------------------------------------------------
+# RUN echo Certified Token: ${AAP_CERTIFIED_TOKEN}
+# RUN echo Validated Token: ${AAP_VALIDATED_TOKEN}
+# RUN echo --------------------------------------------------
 
 # Set tokens as environment variables for ansible-galaxy to use with the configured servers
 ENV ANSIBLE_GALAXY_SERVER_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
@@ -84,7 +84,7 @@ LABEL ansible-execution-environment=true \
       summary="${DESCRIPTION}"
 
 COPY --from=galaxy /usr/share/ansible /usr/share/ansible
-RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/azure/azcollection/requirements.txt
+# RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/community/vmware/requirements.txt
 RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/google/cloud/requirements.txt
 RUN pip install --no-cache-dir -r /usr/share/ansible/collections/ansible_collections/kubernetes/core/requirements.txt
@@ -94,10 +94,10 @@ COPY install_binaries.sh /tmp/install_binaries.sh
 RUN /tmp/install_binaries.sh
 
 # Azure CLI
-RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc \
-    && dnf install -y https://packages.microsoft.com/config/rhel/9/packages-microsoft-prod.rpm \
-    && dnf install -y azure-cli \
-    && dnf clean all
+# RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc \
+#     && dnf install -y https://packages.microsoft.com/config/rhel/9/packages-microsoft-prod.rpm \
+#     && dnf install -y azure-cli \
+#     && dnf clean all
 
 RUN rm -rf /tmp/* /root/.cache /root/*
 

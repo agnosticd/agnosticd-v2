@@ -212,10 +212,6 @@ run_ansible_navigator() {
     mkdir -p "${OUTPUT_DIR_ROOT}/${GUID}"
   fi
 
-  if [ ! -d "${OUTPUT_DIR_ROOT}/${GUID}/requirements_collections/ansible_collections" ]; then
-    mkdir -p ${OUTPUT_DIR_ROOT}/${GUID}/requirements_collections/ansible_collections
-  fi
-
   export ANSIBLE_LOG_PATH="/output_dir_root/${GUID}/${GUID}.log"
   export ANSIBLE_NAVIGATOR_PLAYBOOK_ARTIFACT_SAVE_AS=/output_dir_root/${GUID}
 
@@ -230,7 +226,6 @@ run_ansible_navigator() {
     --execution-environment-volume-mounts ${VARS_DIR}:/vars:Z \
     --execution-environment-volume-mounts ${SECRETS_DIR}:/secrets:Z \
     --execution-environment-volume-mounts ${OUTPUT_DIR_ROOT}:/output_dir_root:Z \
-    --execution-environment-volume-mounts ${OUTPUT_DIR_ROOT}/${GUID}/requirements_collections:/home/runner/.ansible/collections:Z \
     --mode stdout
 }
 

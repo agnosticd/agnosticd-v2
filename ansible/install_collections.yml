@@ -29,15 +29,12 @@
 - name: Debug COLLECTIONS_PATHS
   ansible.builtin.debug:
     var: _collections_path
-    # verbosity: 2
 
 - name: Install collections from requirements.yml
-  vars:
-    __collections_path: "{{ lookup('config', 'COLLECTIONS_PATHS')[0] }}"
   ansible.builtin.command: >-
     ansible-galaxy collection install
     --requirements-file "{{ r_tempfile.path }}"
-    --collections-path "{{ __collections_path | quote }}"
+    --collections-path "{{ _collections_path[0] | quote }}"
     --force-with-deps
   register: r_ansible_galaxy_install_collections
   until: r_ansible_galaxy_install_collections is successful

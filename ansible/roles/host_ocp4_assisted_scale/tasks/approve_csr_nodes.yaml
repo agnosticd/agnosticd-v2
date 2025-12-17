@@ -56,20 +56,13 @@
   - name: Count Ready nodes
     ansible.builtin.set_fact:
       ready_nodes_count: >-
-        {{ r_worker_nodes
-          | json_query("resources[].status.conditions[?type=='Ready' && status=='True']")
-          | length }}
-
-  - name: Count Ready nodes
-    ansible.builtin.set_fact:
-      ready_nodes_count: >-
         {{
           r_worker_nodes
           | json_query(
               "resources[?status.conditions[?type=='Ready'].status | [0] == 'True']"
             )
           | length
-        }} 
+        }}
 
   - name: Include this tasks again if nodes doesn't appear
     when: (current_instance_workers | int + worker_instance_count | int) != ready_nodes_count | int

@@ -8,6 +8,13 @@
     requirements_path: "configs/{{ config }}/requirements.yml"
     requirements_content: {}
   tasks:
+  - name: Debug Ansible runtime version (controller)
+    ansible.builtin.debug:
+      msg:
+      - "ansible_version.full={{ ansible_version.full | default('unknown') }}"
+      - "ansible_version.string={{ ansible_version.string | default('unknown') }}"
+      - "ansible_playbook_python={{ ansible_playbook_python | default('unknown') }}"
+
   - name: Set output_dir if not defined
     when: output_dir is not defined
     ansible.builtin.set_fact:

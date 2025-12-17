@@ -154,6 +154,19 @@ if [ ! -d "/runner/requirements_collections/ansible_collections" ]; then
 fi
 export HOME=/home/runner
 
+# Ensure collections path includes all expected locations
+# AAP may override this, so we set it explicitly to include all paths
+if [ -z "${ANSIBLE_COLLECTIONS_PATH:-}" ]; then
+  export ANSIBLE_COLLECTIONS_PATH="/home/runner/.ansible/collections:/collections:/usr/share/ansible/collections"
+else
+  # Prepend our paths if ANSIBLE_COLLECTIONS_PATH is already set (e.g., by AAP)
+  export ANSIBLE_COLLECTIONS_PATH="/home/runner/.ansible/collections:${ANSIBLE_COLLECTIONS_PATH}"
+fi
+
+# Ensure the collections directories exist and are writable
+mkdir -p /home/runner/.ansible/collections 2>/dev/null || true
+chmod -R ug+rwx /home/runner/.ansible/collections 2>/dev/null || true
+
 # Logic to run the playbook to install dynamic dependencies before handing over to the requested command.
 # Process Arguments differently if running in ansible-navigator or in AAP
 log_debug "Original arguments: $*"

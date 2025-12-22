@@ -34,6 +34,7 @@
       zone: "{{ cluster_dns_zone  }}"
       type: A
     loop:
+    - "api-int"
     - "api"
     - "*.apps"
     retries: 6

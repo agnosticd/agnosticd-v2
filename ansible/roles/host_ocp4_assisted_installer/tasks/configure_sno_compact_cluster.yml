@@ -17,6 +17,7 @@
     wait_timeout: 300
 
 - name: Wait for the LoadBalancer value - control plane
+  when: route53_aws_access_key_id is defined
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Service
@@ -28,6 +29,7 @@
   delay: 2
 
 - name: Add A DNS record - api (Route53)
+  when: route53_aws_access_key_id is defined
   amazon.aws.route53:
     state: present
     aws_access_key_id: "{{ route53_aws_access_key_id }}"
@@ -43,6 +45,7 @@
   delay: 30
 
 - name: Add A DNS record - api-int (Route53)
+  when: route53_aws_access_key_id is defined
   amazon.aws.route53:
     state: present
     aws_access_key_id: "{{ route53_aws_access_key_id }}"
@@ -71,3 +74,54 @@
   until: r_route53_add_record is success
   retries: 10
   delay: 30
+
+- name: Add A dns record - masters
+  when: cluster_dns_server is defined
+  ansible.builtin.nsupdate:
+    server: >-
+      {{ cluster_dns_server
+      | ipaddr
+      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      }}
+    zone: "{{ cluster_dns_zone }}"
+    record: "api.{{ cluster_name}}"
+    type: A
+    ttl: 30
+    port: "{{ cluster_dns_port | d('53') }}"
+    value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    key_name: "{{ ddns_key_name }}"
+    key_secret: "{{ ddns_key_secret }}"
+
+- name: Add A dns record - masters
+  when: cluster_dns_server is defined
+  ansible.builtin.nsupdate:
+    server: >-
+      {{ cluster_dns_server
+      | ipaddr
+      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      }}
+    zone: "{{ cluster_dns_zone }}"
+    record: "api-int.{{ cluster_name}}"
+    type: A
+    ttl: 30
+    port: "{{ cluster_dns_port | d('53') }}"
+    value: "{{ ai_network_prefix + '.100' if control_plane_instance_count | int > 1 else ai_network_prefix + '.10' }}"
+    key_name: "{{ ddns_key_name }}"
+    key_secret: "{{ ddns_key_secret }}"
+
+- name: Add A dns record - workers
+  when: cluster_dns_server is defined
+  ansible.builtin.nsupdate:
+    server: >-
+      {{ cluster_dns_server
+      | ipaddr
+      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      }}
+    zone: "{{ cluster_dns_zone }}"
+    record: "*.apps.{{ cluster_name}}"
+    type: A
+    ttl: 30
+    port: "{{ cluster_dns_port | d('53') }}"
+    value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
+    key_name: "{{ ddns_key_name }}"
+    key_secret: "{{ ddns_key_secret }}"

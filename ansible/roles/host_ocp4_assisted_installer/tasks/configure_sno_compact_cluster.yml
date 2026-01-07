@@ -91,6 +91,7 @@
     value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
     key_name: "{{ ddns_key_name }}"
     key_secret: "{{ ddns_key_secret }}"
+    key_algorithm: "hmac-sha256"
 
 - name: Add A dns record - masters
   when: cluster_dns_server is defined
@@ -108,6 +109,7 @@
     value: "{{ ai_network_prefix + '.100' if control_plane_instance_count | int > 1 else ai_network_prefix + '.10' }}"
     key_name: "{{ ddns_key_name }}"
     key_secret: "{{ ddns_key_secret }}"
+    key_algorithm: "hmac-sha256"
 
 - name: Add A dns record - workers
   when: cluster_dns_server is defined
@@ -125,3 +127,4 @@
     value: "{{ r_svc_control_plane.resources[0].status.loadBalancer.ingress[0].ip }}"
     key_name: "{{ ddns_key_name }}"
     key_secret: "{{ ddns_key_secret }}"
+    key_algorithm: "hmac-sha256"

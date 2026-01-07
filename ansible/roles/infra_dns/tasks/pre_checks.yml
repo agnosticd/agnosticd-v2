@@ -1,5 +1,20 @@
 ---
+- name: Check variables when ddns is used
+  when: cluster_dns_server is defined
+  block:
+    - when: >-
+        cluster_dns_zone is not defined
+        or ddns_key_name is not defined
+        or ddns_key_secret is not defined
+      fail:
+        msg: |
+          All the following variables must be defined:
+          - cluster_dns_zone
+          - ddns_key_name
+          - ddns_key_secret
+
 - name: Check that Route53 variables are defined
+  when: route53_aws_zone_id is defined
   ansible.builtin.assert:
     that:
     - route53_aws_zone_id | default('') | length > 0

@@ -78,11 +78,11 @@
 
 - name: Add A dns record - masters
   when: cluster_dns_server is defined
-  ansible.builtin.nsupdate:
+  community.general.nsupdate:
     server: >-
       {{ cluster_dns_server
-      | ipaddr
-      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      | ansible.utils.ipaddr
+      | ternary(cluster_dns_server, lookup('community.general.dig', cluster_dns_server))
       }}
     zone: "{{ cluster_dns_zone }}"
     record: "api.{{ cluster_name}}"
@@ -95,11 +95,11 @@
 
 - name: Add A dns record - masters
   when: cluster_dns_server is defined
-  ansible.builtin.nsupdate:
+  community.general.nsupdate:
     server: >-
       {{ cluster_dns_server
-      | ipaddr
-      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      | ansible.utils.ipaddr
+      | ternary(cluster_dns_server, lookup('community.general.dig', cluster_dns_server))
       }}
     zone: "{{ cluster_dns_zone }}"
     record: "api-int.{{ cluster_name}}"
@@ -112,11 +112,11 @@
 
 - name: Add A dns record - workers
   when: cluster_dns_server is defined
-  ansible.builtin.nsupdate:
+  community.general.nsupdate:
     server: >-
       {{ cluster_dns_server
-      | ipaddr
-      | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+      | ansible.utils.ipaddr
+      | ternary(cluster_dns_server, lookup('community.general.dig', cluster_dns_server))
       }}
     zone: "{{ cluster_dns_zone }}"
     record: "*.apps.{{ cluster_name}}"

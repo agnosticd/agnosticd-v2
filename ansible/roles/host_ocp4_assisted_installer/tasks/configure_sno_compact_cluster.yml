@@ -61,6 +61,7 @@
   delay: 30
 
 - name: Add A DNS record - apps (Route53)
+  when: route53_aws_access_key_id is defined
   amazon.aws.route53:
     state: present
     aws_access_key_id: "{{ route53_aws_access_key_id }}"

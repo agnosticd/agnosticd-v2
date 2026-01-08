@@ -38,9 +38,6 @@ collections:
 # Ansible stuff
 - name: awx.awx
 # Needs awx.awx collection
-- name: infra.aap_configuration
-- name: infra.controller_configuration
-- name: infra.eda_configuration
 
 # Cloud Provider Collections
 # boto3 >= 1.18.0

@@ -1,4 +1,4 @@
-== Contributing
+== Contributing++++
 
 If you're reading this, hopefully you are considering helping out with Ansible Agnostic Deployer aka AgnosticD.
 

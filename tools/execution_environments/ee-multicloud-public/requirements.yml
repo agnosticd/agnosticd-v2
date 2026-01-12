@@ -22,7 +22,6 @@ collections:
 # Red Hat certified collections
 # -----------------------------------------
 - name: ansible.controller
-  version: 4.7.6
 - name: ansible.eda
 - name: ansible.hub
 - name: ansible.platform
@@ -39,6 +38,10 @@ collections:
 # Ansible stuff
 - name: awx.awx
 # Needs awx.awx collection
+- name: infra.aap_configuration
+  version: 3.8.3
+- name: infra.controller_configuration
+- name: infra.eda_configuration
 
 # Cloud Provider Collections
 # boto3 >= 1.18.0

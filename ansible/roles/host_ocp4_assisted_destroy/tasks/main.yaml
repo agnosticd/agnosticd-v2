@@ -24,7 +24,7 @@
     delay: 10
     ignore_errors: true
 
-  - name: Delete dns records
+  - name: Delete dns records (DDNS)
     when: cluster_dns_server is defined
     ansible.builtin.nsupdate:
       server: >-

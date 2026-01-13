@@ -124,9 +124,9 @@
       domain:
         cpu:
           cores: {{ ai_workers_cores | int }}
-          sockets: 1
-          threads: 1
-          maxSockets: 2
+          sockets: {{ ai_workers_sockets | default(1) | int }}
+          threads: {{ ai_workers_threads | default(1) | int }}
+          maxSockets: {{ ai_workers_max_sockets | default(2) | int }}
           model: host-passthrough
         devices:
           disks: {{ _instance_disks | replace('INSTANCENAME', vmname) }}

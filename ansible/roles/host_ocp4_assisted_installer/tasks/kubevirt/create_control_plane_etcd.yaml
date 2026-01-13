@@ -143,8 +143,9 @@
       domain:
         cpu:
           cores: {{ ai_control_plane_cores | int }}
-          sockets: 1
-          threads: 1
+          sockets: {{ ai_control_plane_sockets | default(1) | int }}
+          threads: {{ ai_control_plane_threads | default(1) | int }}
+          maxSockets: {{ ai_control_plane_max_sockets | default(2) | int }}
           model: host-passthrough
         devices:
           disks: {{ _instance_disks | replace('INSTANCENAME', vmname) }}

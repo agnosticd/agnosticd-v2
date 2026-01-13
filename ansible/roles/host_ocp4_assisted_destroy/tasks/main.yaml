@@ -24,7 +24,31 @@
     delay: 10
     ignore_errors: true
 
+  - name: Delete dns records
+    when: cluster_dns_server is defined
+    ansible.builtin.nsupdate:
+      server: >-
+        {{ cluster_dns_server
+        | ipaddr
+        | ternary(cluster_dns_server, lookup('dig', cluster_dns_server))
+        }}
+      zone: "{{ cluster_dns_zone }}"
+      record: "{{ item }}.{{ cluster_name}}"
+      type: A
+      ttl: 30
+      port: "{{ cluster_dns_port | d('53') }}"
+      key_name: "{{ ddns_key_name }}"
+      key_secret: "{{ ddns_key_secret }}"
+      key_algorithm:  hmac-sha256
+      state: absent
+    loop:
+      - "api-int"
+      - "api"
+      - "*.apps"
+    when: cluster_dns_server is defined
+    
   - name: Delete DNS records (Route53)
+    when: route53_aws_access_key_id is defined
     amazon.aws.route53:
       state: absent
       aws_access_key_id: "{{ route53_aws_access_key_id }}"

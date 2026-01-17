@@ -49,6 +49,9 @@
     name: "{{ openshift_cluster_admin_service_account_name }}-token"
     namespace: "{{ openshift_cluster_admin_service_account_namespace }}"
   register: r_token_secret
+  retries: 10
+  delay: 10
+  until: r_token_secret.resources | length > 0
 
 - name: Set token and CA cert facts
   ansible.builtin.set_fact:

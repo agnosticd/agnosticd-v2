@@ -9,3 +9,8 @@
     when: openshift_cnv_scale_cluster | default(false) | bool
     ansible.builtin.include_role:
       name: host_ocp4_assisted_scale
+
+  - name: Scale OpenShift workers on AWS
+    when: openshift_aws_scale_workers | default(false) | bool
+    ansible.builtin.include_role:
+      name: agnosticd.cloud_provider_aws.scale_ocp_workers

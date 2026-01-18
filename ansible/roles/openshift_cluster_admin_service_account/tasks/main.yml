@@ -51,7 +51,13 @@
   register: r_token_secret
   retries: 10
   delay: 10
-  until: r_token_secret.resources | length > 0
+  until:
+  - r_token_secret.resources | length > 0
+  - r_token_secret.resources[0].data is defined
+  - r_token_secret.resources[0].data.token is defined
+  - r_token_secret.resources[0].data.token | length > 0
+  - r_token_secret.resources[0].data['ca.crt'] is defined
+  - r_token_secret.resources[0].data['ca.crt'] | length > 0
 
 - name: Set token and CA cert facts
   ansible.builtin.set_fact:

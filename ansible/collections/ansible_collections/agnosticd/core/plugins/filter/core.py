@@ -316,12 +316,18 @@ def agnosticd_filter_out_installed_collections(requirements, installed_collectio
             # collection is not installed, keep it
             keep_collections.append(collection)
         else:
+            installed_version = installed.get(collection['name'])
+            # Keep collections that explicitly specify a source so they can
+            # override the preinstalled EE collection.
+            if collection.get('source'):
+                keep_collections.append(collection)
+                continue
             display.warning(
                 "skipping installation of %s==%s ; %s==%s already installed in EE"
                 %(collection['name'],
-                  collection['version'],
+                  collection.get('version', 'unspecified'),
                   collection['name'],
-                  installed[collection['name']])
+                  installed_version)
             )
 
 

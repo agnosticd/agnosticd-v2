@@ -1,58 +1,113 @@
 ---
+# Complete list of collections from agnosticd-v1 and agnosticd-v2
+# Generated for Galaxy outage hotfix - all collections baked into EE
+
 collections:
+# -----------------------------------------
+# Ansible Core Collections
+# -----------------------------------------
 - name: ansible.netcommon
 - name: ansible.posix
 - name: ansible.utils
 - name: ansible.windows
+- name: ansible.workshops
 
-# cryptography
+# -----------------------------------------
+# Community Collections
+# -----------------------------------------
+- name: community.aws
 - name: community.crypto
 - name: community.general
+- name: community.mysql
+- name: community.okd
+- name: community.vmware
 
+# -----------------------------------------
+# Container & Kubernetes
+# -----------------------------------------
 - name: containers.podman
-
-# kubernetes>=12.0.0
-# requests-oauthlib
-# jsonpatch
 - name: kubernetes.core
 - name: kubevirt.core
-- name: community.okd
 
 # -----------------------------------------
-# Red Hat certified collections
+# Cloud Providers - AWS
 # -----------------------------------------
-- name: ansible.controller
-- name: ansible.eda
-- name: ansible.hub
-- name: ansible.platform
-- name: redhat.rhbk
-- name: redhat.trusted_profile_analyzer
-- name: redhat.insights
-- name: redhat.rhel_system_roles
-- name: redhat.artifact_signer
-- name: redhat.satellite
-- name: redhat.openshift
-- name: redhat.openshift_virtualization
-# -----------------------------------------
-
-# Ansible stuff
-- name: awx.awx
-# Needs awx.awx collection
-- name: infra.aap_configuration
-- name: infra.controller_configuration
-- name: infra.eda_configuration
-
-# Cloud Provider Collections
-# boto3 >= 1.18.0
-# botocore >= 1.21.0
 - name: amazon.aws
 
-# requirements-azure.txt from the collection
-# - name: azure.azcollection
+# -----------------------------------------
+# Cloud Providers - Azure
+# -----------------------------------------
+- name: azure.azcollection
+- name: azure.rm
 
-# requirements.txt from the collection
+# -----------------------------------------
+# Cloud Providers - GCP
+# -----------------------------------------
 - name: google.cloud
 
-# requirements.txt from the collection
-- name: community.vmware
+# -----------------------------------------
+# Cloud Providers - OpenStack
+# -----------------------------------------
+- name: openstack.cloud
+
+# -----------------------------------------
+# Cloud Providers - Equinix
+# -----------------------------------------
+- name: equinix.cloud
+- name: equinix.metal
+
+# -----------------------------------------
+# Cloud Providers - IBM
+# -----------------------------------------
+- name: ibm.cloudcollection
+
+# -----------------------------------------
+# VMware
+# -----------------------------------------
+- name: vmware.vmware
 - name: vmware.vmware_rest
+
+# -----------------------------------------
+# Virtualization - oVirt
+# -----------------------------------------
+- name: ovirt.ovirt
+
+# -----------------------------------------
+# Ansible Automation Platform (Public Galaxy)
+# -----------------------------------------
+- name: ansible.eda
+- name: ansible.hub
+- name: awx.awx
+- name: infra.aap_configuration
+- name: infra.aap_utilities
+- name: infra.controller_configuration
+- name: infra.eda_configuration
+- name: redhat_cop.tower_configuration
+- name: redhat_cop.tower_utilities
+
+# -----------------------------------------
+# Infrastructure & Network
+# -----------------------------------------
+- name: infoblox.nios_modules
+- name: theforeman.foreman
+- name: skupper.network
+
+# -----------------------------------------
+# Misc
+# -----------------------------------------
+- name: l3d.git
+
+# -----------------------------------------
+# Red Hat Certified Collections (require Automation Hub token)
+# These are NOT on public galaxy.ansible.com
+# -----------------------------------------
+- name: ansible.controller
+- name: ansible.platform
+- name: redhat.artifact_signer
+- name: redhat.insights
+- name: redhat.openshift
+- name: redhat.openshift_virtualization
+- name: redhat.rhbk
+- name: redhat.rhel_system_roles
+- name: redhat.satellite
+- name: redhat.trusted_profile_analyzer

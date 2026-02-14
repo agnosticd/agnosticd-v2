@@ -45,6 +45,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # ----------------------------------------------------------------------------------
 # Build Galaxy image from base image
+# HOTFIX: Downloading and installing collections via direct URLs (Galaxy API is down)
 # ----------------------------------------------------------------------------------
 FROM base as galaxy
 
@@ -54,22 +55,22 @@ ARG AAP_VALIDATED_TOKEN=notset
 COPY ansible.cfg /root/.ansible.cfg
 COPY requirements.yml /tmp/requirements.yml
 
-# RUN echo --------------------------------------------------
-# RUN echo Certified Token: ${AAP_CERTIFIED_TOKEN}
-# RUN echo Validated Token: ${AAP_VALIDATED_TOKEN}
-# RUN echo --------------------------------------------------
+# HOTFIX: Copy download script and install script
+COPY download_collections.py /tmp/download_collections.py
+COPY hotfix_install_collections.sh /tmp/hotfix_install_collections.sh
+RUN chmod +x /tmp/download_collections.py /tmp/hotfix_install_collections.sh
 
-# Set tokens as environment variables for ansible-galaxy to use with the configured servers
-ENV ANSIBLE_GALAXY_SERVER_CERTIFIED_TOKEN=${AAP_CERTIFIED_TOKEN}
-ENV ANSIBLE_GALAXY_SERVER_VALIDATED_TOKEN=${AAP_VALIDATED_TOKEN}
+# HOTFIX: Download collections directly via download URLs (bypasses Galaxy API)
+# This works because download links still function even when Galaxy API returns 500
+# Note: pyyaml and requests are already installed via requirements.txt in base image
+RUN /tmp/download_collections.py \
+    --requirements /tmp/requirements.yml \
+    --output-dir /tmp/hotfix-collections \
+    --certified-token "${AAP_CERTIFIED_TOKEN}" \
+    --validated-token "${AAP_VALIDATED_TOKEN}"
 
-RUN ansible-galaxy role install -r /tmp/requirements.yml --roles-path "/usr/share/ansible/roles"
-RUN for i in 1 2 3; do \
-      ansible-galaxy collection install -vv -r /tmp/requirements.yml --collections-path "/usr/share/ansible/collections" && break || \
-      { echo "Attempt $i failed. Retrying in 5 seconds..."; sleep 5; }; \
-    done && \
-    ansible-galaxy collection list --collections-path "/usr/share/ansible/collections" || \
-    { echo "Failed to install collections after 3 attempts"; exit 1; }
+# HOTFIX: Install collections from downloaded tar.gz files
+RUN /tmp/hotfix_install_collections.sh
 
 # ----------------------------------------------------------------------------------
 # Build Execution Environment image from base & galaxy images

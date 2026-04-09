@@ -391,6 +391,11 @@ def test_agnosticd_filter_out_installed_collections():
                     {
                         "name": "openstack.cloud",
                         "version": "1.7.2"
+                    },
+                    {
+                        "name": "agnosticd.cloud_provider_openshift_cnv",
+                        "version": "1.0.0",
+                        "source": "https://github.com/agnosticd/cloud_provider_openshift_cnv"
                     }
                 ]
             },
@@ -421,6 +426,9 @@ def test_agnosticd_filter_out_installed_collections():
                     },
                     "openstack.cloud": {
                         "version": "2.0.0"
+                    },
+                    "agnosticd.cloud_provider_openshift_cnv": {
+                        "version": "0.9.0"
                     }
                 }
             }
@@ -435,6 +443,11 @@ def test_agnosticd_filter_out_installed_collections():
                     {
                         "name": "google.cloud",
                         "version": "1.0.2"
+                    },
+                    {
+                        "name": "agnosticd.cloud_provider_openshift_cnv",
+                        "version": "1.0.0",
+                        "source": "https://github.com/agnosticd/cloud_provider_openshift_cnv"
                     },
                 ]
             },
